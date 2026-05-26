@@ -320,18 +320,57 @@ All images are stored on **Cloudinary** — no local file storage.
 
 ---
 
+## Live Deployment
+
+| Service | URL |
+|---|---|
+| Frontend (Vercel) | `https://power-zone-gym-frontend.vercel.app` |
+| Backend API (Render) | `https://powerzone-gym-backend.onrender.com/api` |
+| Swagger API Docs | `https://powerzone-gym-backend.onrender.com/api/docs` |
+
+> **Note:** The backend runs on Render's free tier — it sleeps after 15 min of inactivity. The first request after a sleep period may take 30–60 seconds to respond.
+
+---
+
+## API Documentation (Swagger UI)
+
+Interactive API docs are available at `/api/docs` (served by `swagger-ui-express`).
+
+- **Local:** `http://localhost:5000/api/docs`
+- **Production:** `https://powerzone-gym-backend.onrender.com/api/docs`
+
+Click **Authorize** in the Swagger UI, paste your JWT token (from `/auth/login`), and use **Try it out** to test any endpoint directly in the browser.
+
+---
+
+## CORS Configuration
+
+The backend allows requests from these origins (configured in `server.js`):
+
+```js
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,   // set to Vercel URL in production
+]
+```
+
+Update `FRONTEND_URL` in Render's environment variables whenever the frontend URL changes.
+
+---
+
 ## Scripts Reference
 
 ### Backend
 ```bash
 npm run dev    # nodemon watch mode (development)
-npm start      # production start
-npm run seed   # seed database with sample data
+npm start      # production start (Render uses this)
+npm run seed   # seed database with sample data (dev only)
 ```
 
 ### Frontend
 ```bash
-npm run dev      # Vite dev server → http://localhost:3000
+npm run dev      # Vite dev server → http://localhost:5173
 npm run build    # Production build → dist/
 npm run preview  # Preview the production build locally
 ```

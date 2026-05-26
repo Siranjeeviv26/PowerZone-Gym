@@ -4,14 +4,26 @@ const cors = require('cors')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpec = require('./swagger')
 require('dotenv').config()
+
 
 const app = express()
 
 // Security middleware
 app.use(helmet())
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean)
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
+    callback(new Error('Not allowed by CORS'))
+  },
   credentials: true,
 }))
 
@@ -45,6 +57,12 @@ app.use('/api/testimonials', require('./routes/testimonials'))
 app.use('/api/site-content', require('./routes/siteContent'))
 app.use('/api/v1', require('./routes/masterData'))
 app.use('/api/offers', require('./routes/offers'))
+
+// Swagger UI
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customSiteTitle: 'PowerZone Gym API Docs',
+  customCss: '.swagger-ui .topbar { background-color: #e63946; }',
+}))
 
 // Health check
 app.get('/api/health', (_, res) => res.json({ status: 'OK', timestamp: new Date() }))

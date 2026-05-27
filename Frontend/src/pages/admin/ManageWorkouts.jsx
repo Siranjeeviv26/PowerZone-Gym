@@ -560,11 +560,7 @@ export default function ManageWorkouts() {
                   <FaPlus className="text-xs" /> Create Member Plan
                 </motion.button>
               )}
-              {planTab === 'activity' && (
-                <motion.button whileHover={{ scale: 1.05 }} onClick={openAddActivity} className="btn-primary text-sm py-2.5 flex items-center gap-2">
-                  <FaPlus className="text-xs" /> Add Activity
-                </motion.button>
-              )}
+
             </div>
 
             {/* Plan Type Tabs */}
@@ -580,12 +576,6 @@ export default function ManageWorkouts() {
                 className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${planTab === 'member' ? 'bg-primary text-white' : 'bg-dark-300 text-gray-400 border border-dark-500 hover:text-white'}`}
               >
                 <FaLayerGroup className="text-xs" /> Member Plans
-              </button>
-              <button
-                onClick={() => { setPlanTab('activity'); if (activities.length === 0) fetchActivities() }}
-                className={`px-5 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${planTab === 'activity' ? 'bg-primary text-white' : 'bg-dark-300 text-gray-400 border border-dark-500 hover:text-white'}`}
-              >
-                <FaCalendarAlt className="text-xs" /> Activities
               </button>
             </div>
 
@@ -734,99 +724,6 @@ export default function ManageWorkouts() {
                       </div>
                     </motion.div>
                   ))}
-                </div>
-              )
-            )}
-            {/* ACTIVITY TAB */}
-            {planTab === 'activity' && (
-              activityLoading ? (
-                <div className="flex items-center justify-center py-20">
-                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : activities.length === 0 ? (
-                <div className="glass-card p-12 text-center">
-                  <FaCalendarAlt className="text-4xl text-gray-600 mx-auto mb-3" />
-                  <p className="text-gray-400">No activities yet. Create the first one.</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {activities.map((a, i) => {
-                    const isPast = new Date(a.date) < new Date() && a.status === 'upcoming'
-                    const statusColors = { upcoming: 'text-green-400 bg-green-500/10', completed: 'text-blue-400 bg-blue-500/10', cancelled: 'text-red-400 bg-red-500/10' }
-                    return (
-                      <motion.div
-                        key={a._id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className={`glass-card p-4 ${a.status === 'cancelled' ? 'opacity-60' : ''}`}
-                      >
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-white font-bold text-sm truncate">{a.title}</h3>
-                            <span className="text-xs text-primary">{a.activityType}</span>
-                          </div>
-                          <span className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${statusColors[a.status] || 'text-gray-400 bg-dark-400'}`}>
-                            {a.status}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-400 mb-2">
-                          <span className="flex items-center gap-1">
-                            <FaCalendarAlt className="text-gray-600" />
-                            {new Date(a.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                            {a.time && ` · ${a.time}`}
-                          </span>
-                          {a.branch && <span className="flex items-center gap-1"><FaMapMarkerAlt className="text-gray-600" />{a.branch.name}</span>}
-                        </div>
-
-                        {a.trainers?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {a.trainers.map((t) => (
-                              <span key={t._id} className="flex items-center gap-1 text-xs bg-dark-400 text-gray-300 px-2 py-0.5 rounded-full">
-                                <FaUserTie className="text-gray-500 text-xs" />{t.name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {a.description && (
-                          <div
-                            className="text-gray-500 text-xs mb-3 line-clamp-3 [&_strong]:font-bold [&_strong]:text-gray-400 [&_mark]:rounded [&_ul]:list-disc [&_ul]:pl-3 [&_ol]:list-decimal [&_ol]:pl-3"
-                            dangerouslySetInnerHTML={{ __html: a.description }}
-                          />
-                        )}
-
-                        <div className="flex items-center gap-2 mt-auto pt-1">
-                          <button
-                            onClick={() => setViewRegistrations(a)}
-                            className="flex items-center gap-1.5 text-xs bg-dark-400 hover:bg-dark-300 text-gray-300 px-2.5 py-1.5 rounded-lg transition-colors mr-auto"
-                          >
-                            <FaUsers className="text-gray-500" />
-                            {a.registeredUsers?.length || 0} joined
-                          </button>
-                          <button
-                            onClick={() => { const live = activities.find((x) => x._id === a._id) || a; setViewActivity(live) }}
-                            className="w-7 h-7 bg-green-500/10 hover:bg-green-500/20 rounded-lg flex items-center justify-center text-green-400 transition-colors" title="View"
-                          >
-                            <FaEye className="text-xs" />
-                          </button>
-                          <button
-                            onClick={() => openEditActivity(a)}
-                            className="w-7 h-7 bg-blue-500/10 hover:bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 transition-colors" title="Edit"
-                          >
-                            <FaEdit className="text-xs" />
-                          </button>
-                          <button
-                            onClick={() => setActivityDeleteId(a._id)}
-                            className="w-7 h-7 bg-red-500/10 hover:bg-red-500/20 rounded-lg flex items-center justify-center text-red-400 transition-colors"
-                          >
-                            <FaTrash className="text-xs" />
-                          </button>
-                        </div>
-                      </motion.div>
-                    )
-                  })}
                 </div>
               )
             )}

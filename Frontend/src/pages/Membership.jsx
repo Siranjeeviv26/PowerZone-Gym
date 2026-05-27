@@ -232,7 +232,7 @@ export default function Membership() {
             <motion.div
               initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.85, opacity: 0 }}
               transition={{ type: 'spring', damping: 20 }}
-              className="relative max-w-lg w-full"
+              className="relative max-w-4xl w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -242,7 +242,7 @@ export default function Membership() {
                 <FaTimes /> Close
               </button>
               <div className="rounded-2xl overflow-hidden border border-orange-500/30 shadow-2xl shadow-orange-500/10">
-                <img src={offerLightbox.image} alt={offerLightbox.title || 'Offer'} className="w-full object-contain max-h-[70vh]" />
+                <img src={offerLightbox.image} alt={offerLightbox.title || 'Offer'} className="w-full object-contain max-h-[85vh]" />
                 {offerLightbox.title && (
                   <div className="bg-dark-200 px-5 py-4 flex items-center gap-3">
                     <FaTag className="text-orange-400 flex-shrink-0" />

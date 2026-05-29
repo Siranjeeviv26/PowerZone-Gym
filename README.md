@@ -231,7 +231,7 @@ Trainer profile photo is synced to `User.avatar` on upload so it appears in the 
 | Activities | `/admin/activities` | Create/edit gym events, assign trainers + branches, manage registrations |
 | Site Content | `/admin/content` | Rich editor for every public page section (text, images, links) |
 | Navbar | `/admin/navbar` | Reorder, rename, toggle visibility of nav links |
-| Footer | `/admin/footer` | Contact info, opening hours, social media links |
+| Footer | `/admin/footer` | Contact info, opening hours, social media links with per-platform visibility toggles |
 | Theme | `/admin/theme` | 8 color presets + 4 custom color pickers, live preview, one-click save |
 | Master Data | `/admin/master-data` | Generic dropdown store — tabs: Plan / Workout / Diet Plan |
 | Workouts | `/admin/workouts` | Site plans + member plans, day-by-day exercise builder |

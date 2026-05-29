@@ -457,7 +457,46 @@ This affects every upsert in `siteContent.js`. The bug causes the `section` (req
 
 ---
 
-## 16. Custom Tailwind Classes Reference
+## 16. Footer Social Media Visibility Toggles
+
+Each social media platform (Facebook, Instagram, Twitter, YouTube) has a boolean flag that controls whether its icon appears on the public site footer.
+
+### How it works end-to-end
+
+```
+Admin toggles eye icon in /admin/footer
+    → form state: showFacebook / showInstagram / showTwitter / showYoutube
+    → PUT /api/settings/footer saves all fields to FooterSettings
+    → Public Footer.jsx fetches GET /api/settings/footer on load
+    → socials array filters out platforms where showXxx === false
+    → icon is not rendered on the public site
+```
+
+### Relevant files
+
+| File | Role |
+|---|---|
+| `backend/models/FooterSettings.js` | Defines Boolean fields with `default: true` |
+| `frontend/src/pages/admin/ManageFooter.jsx` | Eye/EyeSlash toggle buttons, `showXxx` in form state |
+| `frontend/src/components/layout/Footer.jsx` | Reads `showXxx` flags, filters socials array |
+
+### Key pattern in Footer.jsx
+```js
+const socials = [
+  settings.showFacebook && { icon: FaFacebook, href: settings.facebook },
+  settings.showInstagram && { icon: FaInstagram, href: settings.instagram },
+  settings.showTwitter && { icon: FaTwitter, href: settings.twitter },
+  settings.showYoutube && { icon: FaYoutube, href: settings.youtube },
+].filter(Boolean)
+```
+`&&` short-circuits to `false` when hidden; `.filter(Boolean)` removes the falsy entries.
+
+### Mongoose strict mode caveat
+Mongoose silently discards fields that are not defined in the schema. If you add new settings fields, **always add them to `FooterSettings.js` first** — otherwise `PUT /settings/footer` will appear to succeed but the new fields will never be stored.
+
+---
+
+## 17. Custom Tailwind Classes Reference
 
 | Class | Description |
 |---|---|
@@ -479,7 +518,7 @@ This affects every upsert in `siteContent.js`. The bug causes the `section` (req
 
 ---
 
-## 17. Deployment Checklist
+## 18. Deployment Checklist
 
 ### Backend → Render (Web Service)
 

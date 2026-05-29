@@ -868,9 +868,15 @@ Update footer content. **Admin**
   "facebook": "https://facebook.com/powerzone",
   "instagram": "https://instagram.com/powerzone",
   "twitter": "https://twitter.com/powerzone",
-  "youtube": "https://youtube.com/@powerzone"
+  "youtube": "https://youtube.com/@powerzone",
+  "showFacebook": true,
+  "showInstagram": true,
+  "showTwitter": false,
+  "showYoutube": true
 }
 ```
+
+`showFacebook`, `showInstagram`, `showTwitter`, `showYoutube` — boolean flags that control whether each social icon is rendered on the public site footer. Set to `false` to hide a platform without deleting its URL.
 
 ---
 

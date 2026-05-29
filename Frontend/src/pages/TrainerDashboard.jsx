@@ -89,7 +89,7 @@ export default function TrainerDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [clientPage, setClientPage] = useState(1)
   const CLIENT_PAGE_SIZE = 15
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024)
   const [selectedClient, setSelectedClient] = useState(null)
   const [clientDetail, setClientDetail] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
@@ -293,8 +293,12 @@ export default function TrainerDashboard() {
 
   return (
     <div className="h-screen bg-dark flex overflow-hidden">
+      {/* Mobile backdrop */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-dark-100 border-r border-dark-400 transition-all duration-300 flex-shrink-0 flex flex-col`}>
+      <aside className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex-shrink-0 flex flex-col bg-dark-100 border-r border-dark-400 transition-all duration-300 ${sidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full w-64 lg:translate-x-0 lg:w-16'}`}>
         <div className={`flex items-center ${sidebarOpen ? 'gap-3 px-6' : 'justify-center px-3'} py-5 border-b border-dark-400`}>
           <div className="w-9 h-9 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0">
             <FaUserTie className="text-white text-sm" />
@@ -304,21 +308,21 @@ export default function TrainerDashboard() {
         <nav className="flex-1 py-4 px-2 overflow-y-auto">
           {/* Dashboard */}
           <button
-            onClick={() => { setActiveTab('dashboard'); setSelectedClient(null) }}
+            onClick={() => { setActiveTab('dashboard'); setSelectedClient(null); if (window.innerWidth < 1024) setSidebarOpen(false) }}
             className={`w-full flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all ${activeTab === 'dashboard' ? 'bg-primary/15 text-primary border border-primary/20' : 'text-gray-400 hover:bg-dark-300 hover:text-white'}`}
           >
             <FaRunning className="text-base flex-shrink-0" />{sidebarOpen && 'Dashboard'}
           </button>
           {/* My Clients */}
           <button
-            onClick={() => { setActiveTab('all'); setSelectedClient(null) }}
+            onClick={() => { setActiveTab('all'); setSelectedClient(null); if (window.innerWidth < 1024) setSidebarOpen(false) }}
             className={`w-full flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all ${(activeTab === 'all' || activeTab === 'personal') ? 'bg-primary/15 text-primary border border-primary/20' : 'text-gray-400 hover:bg-dark-300 hover:text-white'}`}
           >
             <FaUsers className="text-base flex-shrink-0" />{sidebarOpen && 'My Clients'}
           </button>
           {/* My Activities */}
           <button
-            onClick={handleOpenActivities}
+            onClick={() => { handleOpenActivities(); if (window.innerWidth < 1024) setSidebarOpen(false) }}
             className={`relative w-full flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all ${activeTab === 'activities' ? 'bg-primary/15 text-primary border border-primary/20' : 'text-gray-400 hover:bg-dark-300 hover:text-white'}`}
           >
             <FaCalendarAlt className="text-base flex-shrink-0" />
@@ -338,7 +342,7 @@ export default function TrainerDashboard() {
           </button>
           {/* My Profile */}
           <button
-            onClick={() => { setActiveTab('profile'); setSelectedClient(null) }}
+            onClick={() => { setActiveTab('profile'); setSelectedClient(null); if (window.innerWidth < 1024) setSidebarOpen(false) }}
             className={`w-full flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all ${activeTab === 'profile' ? 'bg-primary/15 text-primary border border-primary/20' : 'text-gray-400 hover:bg-dark-300 hover:text-white'}`}
           >
             <FaUser className="text-base flex-shrink-0" />{sidebarOpen && 'My Profile'}
@@ -346,6 +350,7 @@ export default function TrainerDashboard() {
           {/* Visit Site */}
           <Link
             to="/"
+            onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
             className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all text-gray-400 hover:bg-dark-300 hover:text-white`}
           >
             <FaHome className="text-base flex-shrink-0" />
@@ -365,7 +370,7 @@ export default function TrainerDashboard() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-dark-100 border-b border-dark-400 px-6 py-4 flex items-center justify-between">
+        <header className="bg-dark-100 border-b border-dark-400 px-4 md:px-6 py-4 flex items-center justify-between">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400 hover:text-white transition-colors">
             {sidebarOpen ? <FaTimes /> : <FaBars />}
           </button>
@@ -381,7 +386,7 @@ export default function TrainerDashboard() {
           </div>
         </header>
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
           {/* DASHBOARD TAB */}
           {activeTab === 'dashboard' && (
             <div className="space-y-6">

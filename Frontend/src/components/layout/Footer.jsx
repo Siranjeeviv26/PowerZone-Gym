@@ -18,10 +18,10 @@ const footerLinks = {
     { to: '/gallery', label: 'Gallery' },
   ],
   'Services': [
-    { to: '/workouts', label: 'Personal Training' },
+    { to: '/trainers', label: 'Personal Training' },
     { to: '/diet-plans', label: 'Nutrition Plans' },
     { to: '/bmi-calculator', label: 'BMI Calculator' },
-    { to: '/diet-plans', label: 'Group Classes' },
+    { to: '/workouts', label: 'Group Classes' },
     { to: '/membership', label: 'Online Coaching' },
   ],
 }
@@ -36,6 +36,10 @@ const EMPTY = {
   instagram: '#',
   twitter: '#',
   youtube: '#',
+  showFacebook: true,
+  showInstagram: true,
+  showTwitter: true,
+  showYoutube: true,
 }
 
 export default function Footer() {
@@ -56,17 +60,21 @@ export default function Footer() {
           instagram: s.instagram || '#',
           twitter: s.twitter || '#',
           youtube: s.youtube || '#',
+          showFacebook: s.showFacebook !== false,
+          showInstagram: s.showInstagram !== false,
+          showTwitter: s.showTwitter !== false,
+          showYoutube: s.showYoutube !== false,
         })
       })
       .catch(() => {})
   }, [])
 
   const socials = [
-    { icon: FaFacebook, href: settings.facebook, color: '#1877f2' },
-    { icon: FaInstagram, href: settings.instagram, color: '#e1306c' },
-    { icon: FaTwitter, href: settings.twitter, color: '#1da1f2' },
-    { icon: FaYoutube, href: settings.youtube, color: '#ff0000' },
-  ]
+    settings.showFacebook && { icon: FaFacebook, href: settings.facebook, color: '#1877f2' },
+    settings.showInstagram && { icon: FaInstagram, href: settings.instagram, color: '#e1306c' },
+    settings.showTwitter && { icon: FaTwitter, href: settings.twitter, color: '#1da1f2' },
+    settings.showYoutube && { icon: FaYoutube, href: settings.youtube, color: '#ff0000' },
+  ].filter(Boolean)
 
   return (
     <>
@@ -81,16 +89,16 @@ export default function Footer() {
               </h3>
               <p className="text-gray-400 text-sm">Get weekly tips, workout plans, and exclusive offers.</p>
             </div>
-            <div className="flex gap-3 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="input-field max-w-xs"
+                className="input-field sm:max-w-xs"
               />
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="btn-primary whitespace-nowrap flex items-center gap-2"
+                className="btn-primary whitespace-nowrap flex items-center justify-center gap-2"
               >
                 Subscribe <FaArrowRight className="text-sm" />
               </motion.button>

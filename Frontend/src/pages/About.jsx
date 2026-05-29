@@ -55,17 +55,17 @@ export default function About() {
       <PageHero badge={c.heroBadge} title={c.heroTitle} highlight={c.heroHighlight} subtitle={c.heroSubtitle} image={c.heroImage} />
 
       {/* Story */}
-      <section className="py-24 px-4 md:px-8 lg:px-16 bg-dark-100">
+      <section className="py-24 px-4 md:px-8 lg:px-16 bg-dark-100 overflow-x-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <AnimatedSection direction="right">
-              <div className="relative">
+              <div className="relative mb-8 md:mb-0">
                 <img src={c.storyImage} alt="Gym" className="w-full rounded-2xl object-cover h-96 shadow-2xl shadow-black/50" />
-                <div className="absolute -bottom-5 -right-5 bg-dark-200 border border-primary/30 rounded-2xl p-5 shadow-xl">
-                  <div className="text-5xl font-black text-primary" style={{ fontFamily: 'Oswald' }}>{c.storyBadge}</div>
-                  <div className="text-white font-medium text-sm">{c.storyBadgeLabel}</div>
+                <div className="absolute bottom-4 right-4 md:-bottom-5 md:-right-5 bg-dark-200 border border-primary/30 rounded-2xl p-4 md:p-5 shadow-xl">
+                  <div className="text-4xl md:text-5xl font-black text-primary" style={{ fontFamily: 'Oswald' }}>{c.storyBadge}</div>
+                  <div className="text-white font-medium text-xs md:text-sm">{c.storyBadgeLabel}</div>
                 </div>
-                <div className="absolute -top-3 -left-3 w-20 h-20 border-t-[3px] border-l-[3px] border-primary rounded-tl-2xl" />
+                <div className="absolute -top-3 -left-3 w-16 h-16 md:w-20 md:h-20 border-t-[3px] border-l-[3px] border-primary rounded-tl-2xl" />
               </div>
             </AnimatedSection>
             <AnimatedSection direction="left">
@@ -143,19 +143,22 @@ export default function About() {
             </h2>
           </motion.div>
           <div className="relative">
-            <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-secondary to-primary -translate-x-1/2" />
+            {/* Line: left-aligned on mobile, centered on lg */}
+            <div className="absolute left-4 lg:left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-primary via-secondary to-primary lg:-translate-x-1/2" />
             {c.milestones.map((m, i) => (
               <motion.div key={i} initial={{ opacity: 0, x: i % 2 === 0 ? -50 : 50 }} whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.1 }}
-                className={`relative flex items-center mb-10 ${i % 2 === 0 ? 'flex-row-reverse' : ''}`}>
-                <div className={`w-5/12 ${i % 2 === 0 ? 'text-right pr-8' : 'pl-8'}`}>
+                className={`relative flex items-center mb-10 ${i % 2 === 0 ? 'lg:flex-row-reverse' : ''}`}>
+                {/* Card: full width on mobile, 5/12 on lg */}
+                <div className={`w-full pl-10 lg:w-5/12 lg:pl-0 ${i % 2 === 0 ? 'lg:text-right lg:pr-8' : 'lg:pl-8'}`}>
                   <div className="bg-dark-200 border border-dark-400 hover:border-primary/30 rounded-2xl p-5 transition-all duration-300">
                     <div className="text-primary font-black text-2xl mb-1" style={{ fontFamily: 'Oswald' }}>{m.year}</div>
                     <div className="text-white font-bold text-sm mb-1">{m.title}</div>
                     <div className="text-gray-400 text-xs leading-relaxed">{m.desc}</div>
                   </div>
                 </div>
-                <div className="absolute left-1/2 -translate-x-1/2 w-5 h-5 bg-primary rounded-full border-4 border-dark-100 z-10 shadow-lg shadow-primary/30" />
+                {/* Dot: left on mobile, center on lg */}
+                <div className="absolute left-4 lg:left-1/2 -translate-x-1/2 w-5 h-5 bg-primary rounded-full border-4 border-dark-100 z-10 shadow-lg shadow-primary/30" />
               </motion.div>
             ))}
           </div>

@@ -18,7 +18,7 @@ export default function PageHero({ badge, title, highlight, subtitle, image }) {
               <span className="text-primary text-xs font-bold uppercase tracking-widest">{badge}</span>
             </div>
           )}
-          <h1 className="text-5xl md:text-7xl font-black text-white mb-5 leading-tight" style={{ fontFamily: 'Oswald' }}>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white mb-5 leading-tight" style={{ fontFamily: 'Oswald' }}>
             {title}{' '}
             {highlight && (
               <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">{highlight}</span>

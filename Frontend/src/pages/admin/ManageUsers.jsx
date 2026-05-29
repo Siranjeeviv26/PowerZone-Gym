@@ -76,7 +76,7 @@ export default function ManageUsers() {
   const [filter, setFilter] = useState('all')
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 15
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024)
   const [modal, setModal] = useState(null) // null | 'add' | 'edit' | 'trainer' | 'transfer'
   const [selected, setSelected] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -355,8 +355,11 @@ export default function ManageUsers() {
 
   return (
     <div className="h-screen bg-dark flex overflow-hidden">
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-dark-100 border-r border-dark-400 transition-all duration-300 flex-shrink-0 flex flex-col`}>
+      <aside className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex-shrink-0 flex flex-col bg-dark-100 border-r border-dark-400 transition-all duration-300 ${sidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full w-64 lg:translate-x-0 lg:w-16'}`}>
         <div className={`flex items-center ${sidebarOpen ? 'gap-3 px-6' : 'justify-center px-3'} py-5 border-b border-dark-400`}>
           <div className="w-9 h-9 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0">
             <FaUsers className="text-white text-sm" />
@@ -368,6 +371,7 @@ export default function ManageUsers() {
             <Link
               key={item.to}
               to={item.to}
+              onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
               className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all ${
                 pathname === item.to ? 'bg-primary/15 text-primary border border-primary/20' : 'text-gray-400 hover:bg-dark-300 hover:text-white'
               }`}
@@ -390,14 +394,14 @@ export default function ManageUsers() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-dark-100 border-b border-dark-400 px-6 py-4 flex items-center justify-between">
+        <header className="bg-dark-100 border-b border-dark-400 px-4 md:px-6 py-4 flex items-center justify-between">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400 hover:text-white transition-colors">
             {sidebarOpen ? <FaTimes /> : <FaBars />}
           </button>
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">A</div>
         </header>
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
           <div className="space-y-6">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

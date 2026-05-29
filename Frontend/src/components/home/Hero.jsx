@@ -113,7 +113,7 @@ export default function Hero() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}
-              className="flex gap-8 pt-6 border-t border-white/10">
+              className="flex flex-wrap gap-4 sm:gap-8 pt-6 border-t border-white/10">
               {c.stats.map((s, i) => (
                 <div key={i} className="text-center">
                   <div className="text-2xl font-black text-primary" style={{ fontFamily: 'Oswald' }}>{s.value}</div>

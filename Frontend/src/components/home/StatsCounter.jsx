@@ -41,7 +41,7 @@ export default function StatsCounter() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: i * 0.12 }}
-              className="relative group py-14 px-8 text-center">
+              className="relative group py-10 sm:py-14 px-4 sm:px-8 text-center">
               {/* Vertical separator */}
               {i < c.stats.length - 1 && (
                 <div className="absolute right-0 top-1/4 bottom-1/4 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent hidden lg:block" />
@@ -52,12 +52,12 @@ export default function StatsCounter() {
 
               {/* Number */}
               <div className="relative mb-2">
-                <div className="text-7xl md:text-8xl font-black leading-none"
+                <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-none"
                   style={{ fontFamily: 'Oswald' }}>
                   <span className="bg-gradient-to-b from-white to-primary bg-clip-text text-transparent">
                     {inView ? <CountUp end={stat.value} duration={2.5} delay={i * 0.15} /> : 0}
                   </span>
-                  <span className="text-primary text-5xl md:text-6xl">{stat.suffix}</span>
+                  <span className="text-primary text-3xl sm:text-4xl md:text-5xl lg:text-6xl">{stat.suffix}</span>
                 </div>
               </div>
 

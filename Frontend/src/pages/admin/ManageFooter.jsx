@@ -5,7 +5,7 @@ import {
   FaHome, FaSignOutAlt, FaMapMarkerAlt, FaDumbbell, FaImages, FaAppleAlt,
   FaExchangeAlt, FaSave, FaEnvelope, FaFacebook, FaInstagram, FaTwitter,
   FaYoutube, FaClock, FaFileAlt, FaTachometerAlt, FaQuoteLeft, FaRunning, FaEdit, FaLink,
-  FaPalette,
+  FaPalette, FaEye, FaEyeSlash,
   FaDatabase, FaTag,
 } from 'react-icons/fa'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -41,10 +41,11 @@ const DEFAULTS = {
   weekdayHours: 'Mon – Fri: 5:00 AM – 11:00 PM',
   weekendHours: 'Sat – Sun: 6:00 AM – 10:00 PM',
   facebook: '', instagram: '', twitter: '', youtube: '',
+  showFacebook: true, showInstagram: true, showTwitter: true, showYoutube: true,
 }
 
 export default function ManageFooter() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024)
   const [form, setForm] = useState(DEFAULTS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -68,6 +69,10 @@ export default function ManageFooter() {
         instagram: s.instagram || '',
         twitter: s.twitter || '',
         youtube: s.youtube || '',
+        showFacebook: s.showFacebook !== false,
+        showInstagram: s.showInstagram !== false,
+        showTwitter: s.showTwitter !== false,
+        showYoutube: s.showYoutube !== false,
       })
     } catch {
       // keep defaults
@@ -92,7 +97,10 @@ export default function ManageFooter() {
 
   return (
     <div className="h-screen bg-dark flex overflow-hidden">
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-dark-100 border-r border-dark-400 transition-all duration-300 flex-shrink-0 flex flex-col`}>
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+      <aside className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex-shrink-0 flex flex-col bg-dark-100 border-r border-dark-400 transition-all duration-300 ${sidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full w-64 lg:translate-x-0 lg:w-16'}`}>
         <div className={`flex items-center ${sidebarOpen ? 'gap-3 px-6' : 'justify-center px-3'} py-5 border-b border-dark-400`}>
           <div className="w-9 h-9 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center flex-shrink-0">
             <FaGlobe className="text-white text-sm" />
@@ -101,7 +109,7 @@ export default function ManageFooter() {
         </div>
         <nav className="flex-1 py-4 px-2 overflow-y-auto">
           {navItems.map((item) => (
-            <Link key={item.to} to={item.to} className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all ${pathname === item.to ? 'bg-primary/15 text-primary border border-primary/20' : 'text-gray-400 hover:bg-dark-300 hover:text-white'}`}>
+            <Link key={item.to} to={item.to} onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)} className={`flex items-center ${sidebarOpen ? 'gap-3 px-4' : 'justify-center px-2'} py-3 rounded-xl mb-1 text-sm font-medium transition-all ${pathname === item.to ? 'bg-primary/15 text-primary border border-primary/20' : 'text-gray-400 hover:bg-dark-300 hover:text-white'}`}>
               <item.icon className="text-base flex-shrink-0" />{sidebarOpen && item.label}
             </Link>
           ))}
@@ -114,14 +122,14 @@ export default function ManageFooter() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-dark-100 border-b border-dark-400 px-6 py-4 flex items-center justify-between">
+        <header className="bg-dark-100 border-b border-dark-400 px-4 md:px-6 py-4 flex items-center justify-between">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400 hover:text-white transition-colors">
             {sidebarOpen ? <FaTimes /> : <FaBars />}
           </button>
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">A</div>
         </header>
 
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-auto">
           <div className="space-y-6 max-w-2xl">
             <div>
               <h1 className="text-2xl font-black text-white" style={{ fontFamily: 'Oswald' }}>FOOTER SETTINGS</h1>
@@ -174,26 +182,44 @@ export default function ManageFooter() {
 
                 {/* Social */}
                 <div className="glass-card p-5">
-                  <h3 className="text-white font-semibold text-sm mb-4 flex items-center gap-2">
+                  <h3 className="text-white font-semibold text-sm mb-1 flex items-center gap-2">
                     <FaGlobe className="text-primary" /> Social Media Links
                   </h3>
+                  <p className="text-gray-500 text-xs mb-4">Toggle the eye icon to show or hide each platform on the site footer.</p>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-gray-400 text-xs mb-1.5 flex items-center gap-1.5 block"><FaFacebook className="text-blue-400" /> Facebook</label>
-                      <input value={form.facebook} onChange={(e) => f('facebook', e.target.value)} placeholder="https://facebook.com/..." className="input-field text-sm" />
-                    </div>
-                    <div>
-                      <label className="text-gray-400 text-xs mb-1.5 flex items-center gap-1.5 block"><FaInstagram className="text-pink-400" /> Instagram</label>
-                      <input value={form.instagram} onChange={(e) => f('instagram', e.target.value)} placeholder="https://instagram.com/..." className="input-field text-sm" />
-                    </div>
-                    <div>
-                      <label className="text-gray-400 text-xs mb-1.5 flex items-center gap-1.5 block"><FaTwitter className="text-sky-400" /> Twitter / X</label>
-                      <input value={form.twitter} onChange={(e) => f('twitter', e.target.value)} placeholder="https://twitter.com/..." className="input-field text-sm" />
-                    </div>
-                    <div>
-                      <label className="text-gray-400 text-xs mb-1.5 flex items-center gap-1.5 block"><FaYoutube className="text-red-400" /> YouTube</label>
-                      <input value={form.youtube} onChange={(e) => f('youtube', e.target.value)} placeholder="https://youtube.com/..." className="input-field text-sm" />
-                    </div>
+                    {[
+                      { key: 'facebook', showKey: 'showFacebook', icon: FaFacebook, color: 'text-blue-400', label: 'Facebook', placeholder: 'https://facebook.com/...' },
+                      { key: 'instagram', showKey: 'showInstagram', icon: FaInstagram, color: 'text-pink-400', label: 'Instagram', placeholder: 'https://instagram.com/...' },
+                      { key: 'twitter', showKey: 'showTwitter', icon: FaTwitter, color: 'text-sky-400', label: 'Twitter / X', placeholder: 'https://twitter.com/...' },
+                      { key: 'youtube', showKey: 'showYoutube', icon: FaYoutube, color: 'text-red-400', label: 'YouTube', placeholder: 'https://youtube.com/...' },
+                    ].map(({ key, showKey, icon: Icon, color, label, placeholder }) => (
+                      <div key={key}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className={`text-gray-400 text-xs flex items-center gap-1.5 ${!form[showKey] ? 'opacity-40' : ''}`}>
+                            <Icon className={color} /> {label}
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => f(showKey, !form[showKey])}
+                            title={form[showKey] ? 'Visible on site — click to hide' : 'Hidden from site — click to show'}
+                            className={`flex items-center gap-1 text-[10px] font-medium rounded-full px-2 py-0.5 transition-all ${
+                              form[showKey]
+                                ? 'bg-green-500/15 text-green-400 border border-green-500/20'
+                                : 'bg-dark-400 text-gray-500 border border-dark-500'
+                            }`}
+                          >
+                            {form[showKey] ? <FaEye className="text-[9px]" /> : <FaEyeSlash className="text-[9px]" />}
+                            {form[showKey] ? 'Visible' : 'Hidden'}
+                          </button>
+                        </div>
+                        <input
+                          value={form[key]}
+                          onChange={(e) => f(key, e.target.value)}
+                          placeholder={placeholder}
+                          className={`input-field text-sm transition-opacity ${!form[showKey] ? 'opacity-40' : ''}`}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
 

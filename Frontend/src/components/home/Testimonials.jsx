@@ -179,13 +179,13 @@ export default function Testimonials() {
         {/* Bottom stat */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
           className="text-center mt-12">
-          <div className="inline-flex items-center gap-6 bg-dark-200 border border-dark-400 rounded-2xl px-8 py-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 bg-dark-200 border border-dark-400 rounded-2xl px-5 sm:px-8 py-3 sm:py-4">
             <div className="flex items-center gap-1">
               {[...Array(5)].map((_, i) => <FaStar key={i} className="text-yellow-400 text-sm" />)}
             </div>
-            <div className="w-px h-6 bg-dark-400" />
+            <div className="hidden sm:block w-px h-6 bg-dark-400" />
             <span className="text-white font-bold text-sm">{avgRating}/5 average rating</span>
-            <div className="w-px h-6 bg-dark-400" />
+            <div className="hidden sm:block w-px h-6 bg-dark-400" />
             <span className="text-gray-400 text-sm">Based on {testimonials.length}+ reviews</span>
           </div>
         </motion.div>

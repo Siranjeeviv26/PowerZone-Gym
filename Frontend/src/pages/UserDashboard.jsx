@@ -960,7 +960,8 @@ export default function UserDashboard() {
               </div>
             ) : (
               <div className="glass-card overflow-hidden">
-                <table className="w-full">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px]">
                   <thead>
                     <tr className="text-left text-gray-500 text-xs bg-dark-300/50 border-b border-dark-400">
                       {['Date', 'Weight (kg)', 'Body Fat (%)', 'Muscle Mass (kg)', 'Notes', ''].map((h) => (
@@ -1036,6 +1037,7 @@ export default function UserDashboard() {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             )}
           </div>

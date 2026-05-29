@@ -138,11 +138,11 @@ export default function Membership() {
           <div className="inline-flex items-center bg-dark-300 rounded-xl p-1 border border-dark-500 flex-wrap gap-0.5">
             {BILLING_OPTIONS.map((b) => (
               <button key={b.value} onClick={() => setBilling(b.value)}
-                className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-1.5 ${
+                className={`px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-300 flex items-center gap-1 sm:gap-1.5 ${
                   billing === b.value ? 'bg-primary text-white shadow-lg shadow-primary/25' : 'text-gray-400 hover:text-white'
                 }`}>
                 {b.label}
-                {b.saveBadge && <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold">{b.saveBadge}</span>}
+                {b.saveBadge && <span className="hidden sm:inline text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold">{b.saveBadge}</span>}
               </button>
             ))}
           </div>

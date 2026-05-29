@@ -10,6 +10,10 @@ const footerSettingsSchema = new mongoose.Schema({
   instagram: { type: String, default: '' },
   twitter: { type: String, default: '' },
   youtube: { type: String, default: '' },
+  showFacebook: { type: Boolean, default: true },
+  showInstagram: { type: Boolean, default: true },
+  showTwitter: { type: Boolean, default: true },
+  showYoutube: { type: Boolean, default: true },
   transferFeeLabel: { type: String, default: 'Branch Transfer Fee' },
 }, { timestamps: true })
 

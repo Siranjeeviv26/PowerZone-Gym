@@ -65,7 +65,7 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 }))
 
 // Health check
-app.get('/api/health', (_, res) => res.json({ status: 'OK', timestamp: new Date() }))
+app.get('/api/health', (_, res) => res.json({ status: 'Backend is Running', timestamp: new Date() }))
 
 // 404 handler
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }))

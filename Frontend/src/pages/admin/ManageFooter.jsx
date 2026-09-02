@@ -6,7 +6,7 @@ import {
   FaExchangeAlt, FaSave, FaEnvelope, FaFacebook, FaInstagram, FaTwitter,
   FaYoutube, FaClock, FaFileAlt, FaTachometerAlt, FaQuoteLeft, FaRunning, FaEdit, FaLink,
   FaPalette, FaEye, FaEyeSlash,
-  FaDatabase, FaTag,
+  FaDatabase, FaTag, FaMoneyBillWave,
 } from 'react-icons/fa'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import PhoneInput from '../../components/shared/PhoneInput'
@@ -22,6 +22,7 @@ const navItems = [
   { to: '/admin/plans', label: 'Plans', icon: FaCrown },
   { to: '/admin/branches', label: 'Branches', icon: FaMapMarkerAlt },
   { to: '/admin/transfer', label: 'Transfer', icon: FaExchangeAlt },
+  { to: '/admin/payments', label: 'Payments', icon: FaMoneyBillWave },
   { to: '/admin/activities', label: 'Activities', icon: FaRunning },
   { to: '/admin/content', label: 'Site Content', icon: FaEdit },
   { to: '/admin/navbar', label: 'Navbar', icon: FaLink },

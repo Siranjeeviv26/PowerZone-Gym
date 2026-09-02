@@ -1211,7 +1211,7 @@ export default function UserDashboard() {
                       {a.description && (
                         <div
                           className="text-gray-500 text-xs mb-3 [&_strong]:font-bold [&_strong]:text-gray-300 [&_em]:italic [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:space-y-0.5 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:space-y-0.5 [&_mark]:rounded [&_mark]:px-0.5"
-                          dangerouslySetInnerHTML={{ __html: a.description }}
+                          dangerouslySetInnerHTML={{ __html: a.description.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '').replace(/on\w+="[^"]*"/gi, '').replace(/on\w+='[^']*'/gi, '') }}
                         />
                       )}
 

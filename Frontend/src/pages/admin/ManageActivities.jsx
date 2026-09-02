@@ -8,7 +8,7 @@ import {
   FaQuoteLeft, FaRunning, FaCalendarAlt, FaClock, FaSearch, FaUserPlus,
   FaUserMinus, FaToggleOn, FaToggleOff, FaCheck, FaLink, FaUpload,
   FaPalette,
-  FaDatabase, FaTag,
+  FaDatabase, FaTag, FaMoneyBillWave,
 } from 'react-icons/fa'
 import { useDispatch } from 'react-redux'
 import { logout } from '../../store/slices/authSlice'
@@ -22,6 +22,7 @@ const navItems = [
   { to: '/admin/plans', label: 'Plans', icon: FaCrown },
   { to: '/admin/branches', label: 'Branches', icon: FaMapMarkerAlt },
   { to: '/admin/transfer', label: 'Transfer', icon: FaExchangeAlt },
+  { to: '/admin/payments', label: 'Payments', icon: FaMoneyBillWave },
   { to: '/admin/activities', label: 'Activities', icon: FaRunning },
   { to: '/admin/content', label: 'Site Content', icon: FaEdit },
   { to: '/admin/navbar', label: 'Navbar', icon: FaLink },

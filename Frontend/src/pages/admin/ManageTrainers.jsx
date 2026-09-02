@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaPlus, FaEdit, FaTrash, FaStar, FaUsers, FaDumbbell, FaUserTie, FaCrown, FaHome, FaSignOutAlt, FaTimes, FaBars, FaMapMarkerAlt, FaImages, FaAppleAlt, FaEye, FaEnvelope, FaPhone, FaInstagram, FaLinkedin, FaTwitter, FaExchangeAlt, FaGlobe, FaFileAlt, FaTachometerAlt, FaQuoteLeft, FaSearch, FaRunning, FaLink, FaPalette, FaDatabase, FaTag } from 'react-icons/fa'
+import { FaPlus, FaEdit, FaTrash, FaStar, FaUsers, FaDumbbell, FaUserTie, FaCrown, FaHome, FaSignOutAlt, FaTimes, FaBars, FaMapMarkerAlt, FaImages, FaAppleAlt, FaEye, FaEnvelope, FaPhone, FaInstagram, FaLinkedin, FaTwitter, FaExchangeAlt, FaGlobe, FaFileAlt, FaTachometerAlt, FaQuoteLeft, FaSearch, FaRunning, FaLink, FaPalette, FaDatabase, FaTag, FaMoneyBillWave } from 'react-icons/fa'
 import { useDispatch } from 'react-redux'
 import { logout } from '../../store/slices/authSlice'
 import api from '../../utils/api'
@@ -27,6 +27,7 @@ const navItems = [
   { to: '/admin/plans', label: 'Plans', icon: FaCrown },
   { to: '/admin/branches', label: 'Branches', icon: FaMapMarkerAlt },
   { to: '/admin/transfer', label: 'Transfer', icon: FaExchangeAlt },
+  { to: '/admin/payments', label: 'Payments', icon: FaMoneyBillWave },
   { to: '/admin/activities', label: 'Activities', icon: FaRunning },
   { to: '/admin/content', label: 'Site Content', icon: FaEdit },
   { to: '/admin/navbar', label: 'Navbar', icon: FaLink },

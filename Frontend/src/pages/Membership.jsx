@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import { FaCheck, FaCrown, FaBolt, FaStar, FaChevronDown, FaTag, FaTimes } from 'react-icons/fa'
 import PageHero from '../components/shared/PageHero'
+import PaymentModal from '../components/shared/PaymentModal'
 import api from '../utils/api'
 import { useSiteContent } from '../context/SiteContentContext'
 
@@ -29,7 +31,7 @@ const BILLING_OPTIONS = [
   { value: 'yearly',      label: 'Yearly',      short: 'yr',  months: 12, key: 'yearlyPrice',      saveBadge: 'Save 17%' },
 ]
 
-function PlanCard({ plan, billing, index }) {
+function PlanCard({ plan, billing, index, onBuy }) {
   const Icon = ICON_MAP[index % ICON_MAP.length]
   const color = plan.color || '#e63946'
   const opt = BILLING_OPTIONS.find((b) => b.value === billing) || BILLING_OPTIONS[0]
@@ -96,15 +98,15 @@ function PlanCard({ plan, billing, index }) {
           ))}
         </ul>
 
-        <Link to="/register">
-          <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${
-              plan.isPopular ? 'text-white shadow-lg' : 'border border-dark-500 hover:border-primary text-gray-300 hover:text-white hover:bg-primary/10'
-            }`}
-            style={plan.isPopular ? { backgroundColor: color } : {}}>
-            Get Started — {plan.name}
-          </motion.button>
-        </Link>
+        <motion.button
+          whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+          onClick={onBuy}
+          className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+            plan.isPopular ? 'text-white shadow-lg' : 'border border-dark-500 hover:border-primary text-gray-300 hover:text-white hover:bg-primary/10'
+          }`}
+          style={plan.isPopular ? { backgroundColor: color } : {}}>
+          Get Started — {plan.name}
+        </motion.button>
       </div>
     </motion.div>
   )
@@ -116,12 +118,15 @@ export default function Membership() {
     ...MEMBERSHIP_DEFAULTS, ...saved,
     faqs: saved.faqs?.length ? saved.faqs : MEMBERSHIP_DEFAULTS.faqs,
   } : MEMBERSHIP_DEFAULTS
+  const { user } = useSelector((s) => s.auth)
+  const navigate = useNavigate()
   const [billing, setBilling] = useState('monthly')
   const [openFaq, setOpenFaq] = useState(null)
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
   const [offers, setOffers] = useState([])
   const [offerLightbox, setOfferLightbox] = useState(null)
+  const [payModal, setPayModal] = useState(null)
 
   useEffect(() => {
     api.get('/plans').then(({ data }) => setPlans(data.plans || [])).catch(() => {}).finally(() => setLoading(false))
@@ -215,11 +220,30 @@ export default function Membership() {
             </div>
           ) : (
             <div className={`grid grid-cols-1 gap-6 ${plans.length === 1 ? 'max-w-sm mx-auto' : plans.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'md:grid-cols-3'}`}>
-              {plans.map((plan, i) => <PlanCard key={plan._id} plan={plan} billing={billing} index={i} />)}
+              {plans.map((plan, i) => (
+              <PlanCard
+                key={plan._id}
+                plan={plan}
+                billing={billing}
+                index={i}
+                onBuy={() => user ? setPayModal(plan) : navigate('/register')}
+              />
+            ))}
             </div>
           )}
         </div>
       </section>
+
+      {/* Payment Modal */}
+      <AnimatePresence>
+        {payModal && (
+          <PaymentModal
+            plan={payModal}
+            billing={billing}
+            onClose={() => setPayModal(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Offer Lightbox */}
       <AnimatePresence>

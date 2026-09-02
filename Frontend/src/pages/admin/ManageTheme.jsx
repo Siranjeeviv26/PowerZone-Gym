@@ -5,7 +5,7 @@ import {
   FaHome, FaSignOutAlt, FaMapMarkerAlt, FaDumbbell, FaImages, FaAppleAlt,
   FaExchangeAlt, FaSave, FaFileAlt, FaTachometerAlt, FaQuoteLeft,
   FaRunning, FaEdit, FaLink, FaGlobe, FaCheck, FaRedo,
-  FaDatabase, FaTag,
+  FaDatabase, FaTag, FaMoneyBillWave,
 } from 'react-icons/fa'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
@@ -21,6 +21,7 @@ const navItems = [
   { to: '/admin/plans', label: 'Plans', icon: FaCrown },
   { to: '/admin/branches', label: 'Branches', icon: FaMapMarkerAlt },
   { to: '/admin/transfer', label: 'Transfer', icon: FaExchangeAlt },
+  { to: '/admin/payments', label: 'Payments', icon: FaMoneyBillWave },
   { to: '/admin/activities', label: 'Activities', icon: FaRunning },
   { to: '/admin/content', label: 'Site Content', icon: FaEdit },
   { to: '/admin/navbar', label: 'Navbar', icon: FaLink },

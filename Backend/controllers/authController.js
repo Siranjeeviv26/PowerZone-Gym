@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 const Trainer = require('../models/Trainer')
 const { sendResetEmail } = require('../utils/mailer')
+const mongoose = require('mongoose')
 
 const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' })
 
@@ -17,7 +18,17 @@ exports.register = async (req, res) => {
     const { name, email, password, phone, goal } = req.body
     const existing = await User.findOne({ email })
     if (existing) return res.status(400).json({ message: 'Email already registered' })
-    const user = await User.create({ name, email, password, phone, goal })
+
+    // Use atomic counter to prevent race conditions
+    const counter = await mongoose.connection.db.collection('counters').findOneAndUpdate(
+      { _id: 'userRegNo' },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: 'after' }
+    )
+    const year = new Date().getFullYear()
+    const regNo = `PZ-${year}-${String(counter.seq).padStart(4, '0')}`
+
+    const user = await User.create({ name, email, password, phone, goal, regNo })
     sendToken(user, 201, res)
   } catch (err) {
     res.status(500).json({ message: err.message })
@@ -68,8 +79,12 @@ exports.forgotPassword = async (req, res) => {
       await sendResetEmail({ to: user.email, name: user.name, resetUrl })
       res.json({ success: true, message: 'Password reset link sent to your email' })
     } else {
-      // Dev fallback — no email configured
-      res.json({ success: true, message: 'Reset link generated (email not configured)', resetUrl })
+      // Dev fallback — no email configured, only show in development
+      if (process.env.NODE_ENV === 'development') {
+        res.json({ success: true, message: 'Reset link generated (email not configured)', resetUrl })
+      } else {
+        res.json({ success: true, message: 'Password reset link sent to your email' })
+      }
     }
   } catch (err) {
     res.status(500).json({ message: err.message })

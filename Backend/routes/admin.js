@@ -46,6 +46,17 @@ router.get('/dashboard', async (req, res) => {
 router.post('/assign-trainer', async (req, res) => {
   try {
     const { userId, trainerId, type } = req.body
+
+    // Validate userId
+    if (!userId) return res.status(400).json({ message: 'User ID is required' })
+
+    // Validate trainerId if provided
+    if (trainerId) {
+      const trainer = await Trainer.findById(trainerId)
+      if (!trainer) return res.status(404).json({ message: 'Trainer not found' })
+      if (!trainer.isActive) return res.status(400).json({ message: 'Cannot assign inactive trainer' })
+    }
+
     const field = type === 'class' ? 'classTrainer' : 'personalTrainer'
     const update = { [field]: trainerId || null }
     const user = await User.findByIdAndUpdate(userId, update, { new: true })
@@ -204,7 +215,14 @@ router.post('/name-transfer', async (req, res) => {
     const toUser = await User.findById(toUserId)
     if (!fromUser || !toUser) return res.status(404).json({ message: 'Member not found' })
 
+    // Validate membership transfer
     const planId = fromUser.membership?.plan?._id
+    if (transferMembership && !planId) {
+      return res.status(400).json({ message: 'Source user has no active membership plan to transfer' })
+    }
+    if (transferMembership && fromUser.membership?.status !== 'active') {
+      return res.status(400).json({ message: 'Cannot transfer inactive or expired membership' })
+    }
 
     const transfer = await NameTransfer.create({
       fromUser: fromUserId,

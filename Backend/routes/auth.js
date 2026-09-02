@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { register, login, getMe, updatePassword, forgotPassword, resetPassword } = require('../controllers/authController')
 const { protect } = require('../middleware/auth')
+const { authLimiter } = require('../middleware/rateLimit')
 const { body } = require('express-validator')
 
 const validateRegister = [
@@ -10,11 +11,12 @@ const validateRegister = [
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 chars'),
 ]
 
-router.post('/register', validateRegister, register)
-router.post('/login', login)
+// Apply stricter rate limiting to authentication routes
+router.post('/register', authLimiter, validateRegister, register)
+router.post('/login', authLimiter, login)
 router.get('/me', protect, getMe)
 router.put('/update-password', protect, updatePassword)
-router.post('/forgot-password', forgotPassword)
-router.post('/reset-password/:token', resetPassword)
+router.post('/forgot-password', authLimiter, forgotPassword)
+router.post('/reset-password/:token', authLimiter, resetPassword)
 
 module.exports = router

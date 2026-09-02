@@ -1,6 +1,55 @@
 const User = require('../models/User')
 const DietPlan = require('../models/DietPlan')
 const WorkoutProgram = require('../models/WorkoutProgram')
+const mongoose = require('mongoose')
+
+// Valid membership status values
+const VALID_MEMBERSHIP_STATUS = ['active', 'expired', 'pending', 'frozen']
+// Valid membership package values
+const VALID_PACKAGES = ['monthly', 'quarterly', 'half-yearly', 'annual']
+
+// Validate membership object
+const validateMembership = (membership) => {
+  if (!membership) return null
+  const errors = []
+
+  if (membership.status && !VALID_MEMBERSHIP_STATUS.includes(membership.status)) {
+    errors.push(`Invalid membership status: ${membership.status}`)
+  }
+  if (membership.package && !VALID_PACKAGES.includes(membership.package)) {
+    errors.push(`Invalid membership package: ${membership.package}`)
+  }
+  if (membership.plan && !mongoose.Types.ObjectId.isValid(membership.plan)) {
+    errors.push('Invalid membership plan ID')
+  }
+  if (membership.startDate && isNaN(new Date(membership.startDate).getTime())) {
+    errors.push('Invalid start date')
+  }
+  if (membership.endDate && isNaN(new Date(membership.endDate).getTime())) {
+    errors.push('Invalid end date')
+  }
+
+  return errors.length > 0 ? errors : null
+}
+
+// Validate social links
+const validateSocialLinks = (socialLinks) => {
+  if (!socialLinks) return null
+  const errors = []
+  const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/i
+
+  for (const [key, value] of Object.entries(socialLinks)) {
+    if (value && typeof value !== 'string') {
+      errors.push(`Invalid ${key} link`)
+    } else if (value && value.length > 500) {
+      errors.push(`${key} link is too long`)
+    } else if (value && !urlPattern.test(value)) {
+      errors.push(`Invalid ${key} URL format`)
+    }
+  }
+
+  return errors.length > 0 ? errors : null
+}
 
 exports.getProfile = async (req, res) => {
   const user = await User.findById(req.user.id)
@@ -14,6 +63,15 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { name, phone, goal, socialLinks } = req.body
+
+    // Validate social links
+    if (socialLinks) {
+      const socialErrors = validateSocialLinks(socialLinks)
+      if (socialErrors) {
+        return res.status(400).json({ message: 'Invalid social links', errors: socialErrors })
+      }
+    }
+
     const user = await User.findByIdAndUpdate(req.user.id, { name, phone, goal, socialLinks }, { new: true, runValidators: true })
       .populate('membership.plan').populate('branch')
       .populate('personalTrainer', 'name speciality image trainerId')
@@ -40,18 +98,47 @@ exports.uploadAvatar = async (req, res) => {
 exports.checkIn = async (req, res) => {
   try {
     const { duration, workoutType, notes } = req.body
-    const user = await User.findById(req.user.id)
+
+    // Validate duration if provided
+    if (duration && (isNaN(duration) || duration <= 0)) {
+      return res.status(400).json({ message: 'Invalid duration value' })
+    }
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    const alreadyCheckedIn = user.attendance.some((a) => {
-      const d = new Date(a.date)
-      d.setHours(0, 0, 0, 0)
-      return d.getTime() === today.getTime()
-    })
-    if (alreadyCheckedIn) return res.status(400).json({ message: 'Already checked in today' })
-    user.attendance.push({ date: new Date(), duration, workoutType, notes })
-    await user.save()
-    res.json({ success: true, attendance: user.attendance })
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    // Use atomic operation to prevent race conditions
+    const result = await User.findOneAndUpdate(
+      {
+        _id: req.user.id,
+        'attendance.date': { $not: { $gte: today, $lt: tomorrow } }
+      },
+      {
+        $push: {
+          attendance: {
+            date: new Date(),
+            duration: duration ? Number(duration) : undefined,
+            workoutType,
+            notes
+          }
+        }
+      },
+      { new: true }
+    )
+
+    if (!result) {
+      // Check if user exists
+      const user = await User.findById(req.user.id)
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' })
+      }
+      // Already checked in today
+      return res.status(400).json({ message: 'Already checked in today' })
+    }
+
+    res.json({ success: true, attendance: result.attendance })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
@@ -69,8 +156,36 @@ exports.getAttendance = async (req, res) => {
 exports.logWeight = async (req, res) => {
   try {
     const { weight, bodyFat, muscleMass, notes } = req.body
+
+    // Validate weight is provided and is a number
+    if (!weight || isNaN(weight) || weight <= 0) {
+      return res.status(400).json({ message: 'Weight must be a positive number' })
+    }
+
+    // Validate optional fields if provided
+    if (bodyFat !== undefined && bodyFat !== null && bodyFat !== '') {
+      if (isNaN(bodyFat) || bodyFat < 0 || bodyFat > 100) {
+        return res.status(400).json({ message: 'Body fat must be between 0 and 100' })
+      }
+    }
+    if (muscleMass !== undefined && muscleMass !== null && muscleMass !== '') {
+      if (isNaN(muscleMass) || muscleMass <= 0) {
+        return res.status(400).json({ message: 'Muscle mass must be a positive number' })
+      }
+    }
+
     const user = await User.findById(req.user.id)
-    user.progress.push({ date: new Date(), weight, bodyFat, muscleMass, notes })
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    user.progress.push({
+      date: new Date(),
+      weight: Number(weight),
+      bodyFat: bodyFat ? Number(bodyFat) : undefined,
+      muscleMass: muscleMass ? Number(muscleMass) : undefined,
+      notes
+    })
     await user.save()
     res.json({ success: true, progress: user.progress })
   } catch (err) {
@@ -137,15 +252,21 @@ exports.getAllUsers = async (req, res) => {
     const { page = 1, limit = 20, search, status, phone } = req.query
     const query = { role: 'user' }
     if (search) {
-      const phoneQuery = search.replace(/[\s\-().+]/g, '')
+      // Escape special regex characters to prevent ReDoS
+      const escapeRegex = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const safeSearch = escapeRegex(search)
+      const phoneQuery = safeSearch.replace(/[\s\-().+]/g, '')
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { phone: { $regex: search, $options: 'i' } },
+        { name: { $regex: safeSearch, $options: 'i' } },
+        { email: { $regex: safeSearch, $options: 'i' } },
+        { phone: { $regex: safeSearch, $options: 'i' } },
         ...(phoneQuery.length >= 4 ? [{ phone: { $regex: phoneQuery, $options: 'i' } }] : []),
       ]
     }
-    if (phone) query.phone = { $regex: phone, $options: 'i' }
+    if (phone) {
+      const safePhone = phone.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      query.phone = { $regex: safePhone, $options: 'i' }
+    }
     if (status) query['membership.status'] = status
     const users = await User.find(query)
       .limit(Number(limit)).skip((page - 1) * Number(limit))
@@ -165,10 +286,36 @@ exports.getAllUsers = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password, phone, goal, membership, referredBy, branch } = req.body
+
+    // Validate membership if provided
+    if (membership) {
+      const membershipErrors = validateMembership(membership)
+      if (membershipErrors) {
+        return res.status(400).json({ message: 'Invalid membership data', errors: membershipErrors })
+      }
+    }
+
+    // Validate branch if provided
+    if (branch && !mongoose.Types.ObjectId.isValid(branch)) {
+      return res.status(400).json({ message: 'Invalid branch ID' })
+    }
+
+    // Validate referredBy if provided
+    if (referredBy && !mongoose.Types.ObjectId.isValid(referredBy)) {
+      return res.status(400).json({ message: 'Invalid referrer ID' })
+    }
+
     const existing = await User.findOne({ email })
     if (existing) return res.status(400).json({ message: 'Email already registered' })
-    const count = await User.countDocuments({ role: 'user' })
-    const regNo = `GYM${String(count + 1).padStart(4, '0')}`
+
+    // Use atomic counter for regNo
+    const counter = await mongoose.connection.db.collection('counters').findOneAndUpdate(
+      { _id: 'userRegNo' },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: 'after' }
+    )
+    const regNo = `GYM${String(counter.seq).padStart(4, '0')}`
+
     const user = await User.create({
       regNo, name, email, password: password || 'changeme123', phone, goal,
       role: 'user',

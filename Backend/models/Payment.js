@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'success', 'failed', 'refunded'], default: 'pending' },
   paymentMethod: { type: String, enum: ['card', 'upi', 'netbanking', 'cash', 'wallet'] },
   transactionId: String,
-  billingCycle: { type: String, enum: ['monthly', 'yearly'] },
+  billingCycle: { type: String, enum: ['monthly', 'quarterly', 'half-yearly', 'yearly'] },
   startDate: Date,
   endDate: Date,
   invoiceNumber: String,

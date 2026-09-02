@@ -457,7 +457,85 @@ This affects every upsert in `siteContent.js`. The bug causes the `section` (req
 
 ---
 
-## 16. Footer Social Media Visibility Toggles
+## 16. Security Best Practices
+
+### Input Validation
+
+Always validate user input on the server side, even if client-side validation exists:
+
+```js
+// Validate membership fields
+const VALID_MEMBERSHIP_STATUS = ['active', 'expired', 'pending', 'frozen']
+const VALID_PACKAGES = ['monthly', 'quarterly', 'half-yearly', 'annual']
+
+if (membership.status && !VALID_MEMBERSHIP_STATUS.includes(membership.status)) {
+  return res.status(400).json({ message: 'Invalid membership status' })
+}
+
+// Validate social links (URL format, length)
+const urlPattern = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-._~:/?#[\]@!$&'()*+,;=]*)?$/i
+if (socialLinks.twitter && !urlPattern.test(socialLinks.twitter)) {
+  return res.status(400).json({ message: 'Invalid Twitter URL format' })
+}
+```
+
+### XSS Prevention
+
+When using `dangerouslySetInnerHTML`, always sanitize HTML content:
+
+```jsx
+import DOMPurify from 'dompurify'
+
+// In component
+const sanitizeHtml = (html) => {
+  if (!html) return ''
+  return typeof window !== 'undefined' 
+    ? DOMPurify.sanitize(html) 
+    : html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+}
+
+<div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
+```
+
+### Atomic Operations for Race Conditions
+
+Use atomic MongoDB operations to prevent race conditions:
+
+```js
+// Check-in: prevent duplicate entries on same day
+const result = await User.findOneAndUpdate(
+  {
+    _id: req.user.id,
+    'attendance.date': { $not: { $gte: today, $lt: tomorrow } }
+  },
+  { $push: { attendance: { date: new Date(), duration, workoutType } } },
+  { new: true }
+)
+
+// Sequential counter for registration numbers
+const counter = await mongoose.connection.db.collection('counters').findOneAndUpdate(
+  { _id: 'userRegNo' },
+  { $inc: { seq: 1 } },
+  { upsert: true, returnDocument: 'after' }
+)
+```
+
+### Environment-Based Feature Gating
+
+Hide development-only features in production:
+
+```jsx
+// Demo credentials only shown in development
+{import.meta.env.DEV && (
+  <div className="demo-credentials">
+    <p>Admin: admin@powerzone.com / admin123</p>
+  </div>
+)}
+```
+
+---
+
+## 17. Footer Social Media Visibility Toggles
 
 Each social media platform (Facebook, Instagram, Twitter, YouTube) has a boolean flag that controls whether its icon appears on the public site footer.
 
@@ -496,7 +574,7 @@ Mongoose silently discards fields that are not defined in the schema. If you add
 
 ---
 
-## 17. Custom Tailwind Classes Reference
+## 18. Custom Tailwind Classes Reference
 
 | Class | Description |
 |---|---|
@@ -518,7 +596,7 @@ Mongoose silently discards fields that are not defined in the schema. If you add
 
 ---
 
-## 18. Deployment Checklist
+## 19. Deployment Checklist
 
 ### Backend → Render (Web Service)
 
@@ -591,7 +669,7 @@ To prevent sleeping, use [UptimeRobot](https://uptimerobot.com) to ping `/api/he
 
 ---
 
-## 18. Standalone Offers System
+## 20. Standalone Offers System
 
 Offers are promotional banners shown on the Membership page. They are **independent of membership plans** — an offer is a single image with title, description, and optional date range.
 
@@ -635,7 +713,7 @@ await api.put(`/offers/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-
 
 ---
 
-## 19. Swagger API Documentation
+## 21. Swagger API Documentation
 
 Interactive API docs are generated from `backend/swagger.js` and served by `swagger-ui-express`.
 
@@ -670,7 +748,7 @@ Open `backend/swagger.js` and add a new path key under `paths`:
 
 ---
 
-## 20. Folder Quick Reference
+## 22. Folder Quick Reference
 
 ```
 backend/

@@ -116,6 +116,8 @@ gym-website/
 
 ### Backend — `backend/.env`
 
+Copy `backend/.env.example` to `backend/.env` and fill in your values:
+
 ```env
 PORT=5000
 NODE_ENV=development
@@ -138,6 +140,8 @@ EMAIL_PASS=your_gmail_app_password
 ```env
 VITE_API_URL=http://localhost:5000/api
 ```
+
+> **Note:** Demo credentials are only shown in development mode (`NODE_ENV=development`). They are hidden in production builds.
 
 ---
 
@@ -311,12 +315,16 @@ All images are stored on **Cloudinary** — no local file storage.
 
 - **Helmet** — HTTP security headers on all responses
 - **CORS** — Restricted to `FRONTEND_URL` env variable
-- **Rate Limiting** — 100 requests per 15 minutes per IP on all `/api/*` routes
+- **Rate Limiting** — 100 requests per 15 minutes per IP on all `/api/*` routes; 10 requests per 15 minutes for auth endpoints
 - **JWT** — 7-day expiry, stored in `localStorage`, sent as `Authorization: Bearer` header
 - **bcryptjs** — Password hashing before storage
 - **Crypto** — SHA-256 hashed reset tokens stored in DB, raw token sent only in email
-- **Input Validation** — express-validator on all mutation routes
+- **Input Validation** — express-validator on all mutation routes; server-side validation for membership, social links, attendance, progress
 - **Role Guard** — `authorize('admin')` / `authorize('trainer', 'admin')` middleware on protected routes
+- **XSS Prevention** — HTML content sanitized before rendering with `dangerouslySetInnerHTML`
+- **Mass Assignment Prevention** — Field whitelisting on all update endpoints
+- **Regex Injection Prevention** — Special characters escaped in search queries
+- **Atomic Operations** — Race condition prevention in check-in and registration number generation
 
 ---
 

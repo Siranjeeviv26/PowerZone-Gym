@@ -18,7 +18,7 @@ Authorization: Bearer <jwt_token>
 
 **Roles:** `user` | `trainer` | `admin`
 
-**Rate limit:** 100 requests / 15 min / IP on all `/api/*` routes
+**Rate limit:** 100 requests / 15 min / IP on all `/api/*` routes; 10 requests / 15 min for auth endpoints
 
 ---
 
@@ -1039,6 +1039,39 @@ Get all payments. **Admin**
 | 404 | Resource not found |
 | 429 | Rate limit exceeded |
 | 500 | Internal server error |
+
+---
+
+## Input Validation
+
+All mutation endpoints validate input on the server side. Common validation patterns:
+
+### Membership Validation
+- `status`: Must be one of `active`, `expired`, `pending`, `frozen`
+- `package`: Must be one of `monthly`, `quarterly`, `half-yearly`, `annual`
+- `plan`: Must be a valid MongoDB ObjectId
+- `startDate` / `endDate`: Must be valid ISO dates
+
+### Social Links Validation
+- All URLs must match standard URL format
+- Maximum length: 500 characters per link
+
+### Attendance Check-in
+- `duration`: Must be a positive number (if provided)
+- One check-in per day per user (enforced atomically)
+
+### Progress/Weight Log
+- `weight`: Required, must be a positive number
+- `bodyFat`: Must be between 0 and 100 (if provided)
+- `muscleMass`: Must be a positive number (if provided)
+
+### Trainer Assignment
+- `trainerId`: Must exist in the database and have role `trainer`
+- Returns 400 with `"Trainer not found"` if invalid
+
+### Payment Approval
+- `paymentId`: Must exist and have status `pending`
+- Returns 400 if payment already processed or not found
 
 ---
 

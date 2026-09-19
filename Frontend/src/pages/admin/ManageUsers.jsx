@@ -31,7 +31,6 @@ const navItems = [
   { to: '/admin/navbar', label: 'Navbar', icon: FaLink },
   { to: '/admin/footer', label: 'Footer', icon: FaGlobe },
   { to: '/admin/theme', label: 'Theme', icon: FaPalette },
-  { to: '/admin/master-data', label: 'Master Data', icon: FaDatabase },
   { to: '/admin/workouts', label: 'Workouts', icon: FaDumbbell },
   { to: '/admin/diet-plans', label: 'Diet Plans', icon: FaAppleAlt },
   { to: '/admin/gallery', label: 'Gallery', icon: FaImages },
@@ -55,6 +54,20 @@ const calcNextPayment = (paymentDate, duration) => {
   if (isNaN(d)) return ''
   d.setMonth(d.getMonth() + (DURATION_MONTHS[duration] || 1))
   return d.toISOString().split('T')[0]
+}
+
+const formatPackage = (pkg) => {
+  if (!pkg) return null
+  const map = { monthly: 'Monthly', quarterly: 'Quarterly', 'half-yearly': 'Half-Yearly', annual: 'Annual', yearly: 'Annual' }
+  return map[pkg] || pkg.charAt(0).toUpperCase() + pkg.slice(1)
+}
+const derivePackageFromDates = (membership) => {
+  if (!membership?.startDate || !membership?.endDate) return null
+  const s = new Date(membership.startDate)
+  const e = new Date(membership.endDate)
+  const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth())
+  const map = { 1: 'Monthly', 3: 'Quarterly', 6: 'Half-Yearly', 12: 'Annual' }
+  return map[months] || null
 }
 
 const EMPTY_FORM = {
@@ -982,7 +995,7 @@ export default function ManageUsers() {
                   <div className="grid grid-cols-2 gap-3 mb-5">
                     {[
                       { label: 'Plan', value: selected.membership?.plan?.name || 'None', icon: FaCrown },
-                      { label: 'Package', value: selected.membership?.package ? selected.membership.package.charAt(0).toUpperCase() + selected.membership.package.slice(1) : '—', icon: FaCalendar },
+                      { label: 'Package', value: formatPackage(selected.membership?.package) || derivePackageFromDates(selected.membership) || '—', icon: FaCalendar },
                       { label: 'Personal Trainer', value: selected.personalTrainer?.name || '—', icon: FaUserTie },
                       { label: 'Class Trainer', value: selected.classTrainer?.name || '—', icon: FaDumbbell },
                       { label: 'Branch', value: selected.branch?.name || '—', icon: FaMapMarkerAlt },
@@ -1000,14 +1013,14 @@ export default function ManageUsers() {
                     )}
                   </div>
 
-                  {(selected.membership?.joiningDate || selected.membership?.paymentDate || selected.membership?.nextPaymentDate) && (
+                  {(selected.membership?.joiningDate || selected.membership?.paymentDate || selected.membership?.nextPaymentDate || selected.membership?.endDate) && (
                     <>
                       <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-semibold">Payment Dates</p>
                       <div className="grid grid-cols-3 gap-3 mb-5">
                         {[
                           { label: 'Joining Date', value: selected.membership?.joiningDate, color: 'text-blue-400' },
                           { label: 'Payment Date', value: selected.membership?.paymentDate, color: 'text-green-400' },
-                          { label: 'Next Payment', value: selected.membership?.nextPaymentDate, color: 'text-yellow-400' },
+                          { label: 'Next Payment', value: selected.membership?.nextPaymentDate || selected.membership?.endDate, color: 'text-yellow-400' },
                         ].map(({ label, value, color }) => (
                           <div key={label} className="p-3 bg-dark-300 rounded-xl">
                             <p className="text-gray-500 text-xs mb-1">{label}</p>

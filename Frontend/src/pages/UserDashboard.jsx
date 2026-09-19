@@ -7,7 +7,7 @@ import {
   FaTrophy, FaAppleAlt, FaRunning, FaClock, FaWeight,
   FaCheckCircle, FaPlus, FaTimes, FaUserTie, FaMapMarkerAlt, FaChevronDown,
   FaUsers, FaCheck, FaHome, FaSignOutAlt, FaTrash, FaSync, FaExclamationTriangle, FaPencilAlt, FaStar,
-  FaInstagram, FaFacebook, FaTwitter, FaLinkedin,
+  FaCreditCard, FaExclamationCircle,
 } from 'react-icons/fa'
 import api from '../utils/api'
 import toast from 'react-hot-toast'
@@ -15,6 +15,7 @@ import { updateProfile, logout, setUser } from '../store/slices/authSlice'
 import { validate, required, minLen, maxLen, phone, positiveNum, numRange, fieldClass } from '../utils/validate'
 // phone also used directly for inline blur validation
 import PhoneInput from '../components/shared/PhoneInput'
+import PaymentModal from '../components/shared/PaymentModal'
 
 
 const Err = ({ msg }) => msg ? <p className="text-red-400 text-xs mt-1">{msg}</p> : null
@@ -48,6 +49,21 @@ function getThisWeekAttendance(attendance) {
     if (diff >= 0 && diff < 7) result[diff] = true
   })
   return result
+}
+
+function formatPackage(pkg) {
+  if (!pkg) return null
+  const map = { monthly: 'Monthly', quarterly: 'Quarterly', 'half-yearly': 'Half-Yearly', annual: 'Annual', yearly: 'Annual' }
+  return map[pkg] || pkg.charAt(0).toUpperCase() + pkg.slice(1)
+}
+
+function derivePackageFromDates(membership) {
+  if (!membership?.startDate || !membership?.endDate) return null
+  const s = new Date(membership.startDate)
+  const e = new Date(membership.endDate)
+  const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth())
+  const map = { 1: 'Monthly', 3: 'Quarterly', 6: 'Half-Yearly', 12: 'Annual' }
+  return map[months] || null
 }
 
 export default function UserDashboard() {
@@ -84,6 +100,11 @@ export default function UserDashboard() {
   const [ratingForm, setRatingForm] = useState({ rating: 0, comment: '' })
   const [hoverRating, setHoverRating] = useState(0)
   const [ratingSaving, setRatingSaving] = useState(false)
+  const [membershipPlans, setMembershipPlans] = useState([])
+  const [payModal, setPayModal] = useState(null)
+  const [payBilling, setPayBilling] = useState('monthly')
+  const [pendingPayments, setPendingPayments] = useState([])
+  const [plansLoading, setPlansLoading] = useState(false)
 
   const tabConfig = [
     { id: 'overview', label: 'Overview', icon: FaFire },
@@ -98,6 +119,14 @@ export default function UserDashboard() {
     fetchAll()
     fetchActivities()
   }, [])
+
+  useEffect(() => {
+    // Fetch plans/payments when membership is not active so user can pay
+    if (profile && profile.membership?.status !== 'active') {
+      fetchMembershipPlans()
+      fetchPendingPayments()
+    }
+  }, [profile?.membership?.status])
 
   useEffect(() => {
     if (activeTab === 'diet' || activeTab === 'workouts') fetchPlans()
@@ -161,6 +190,22 @@ export default function UserDashboard() {
     } catch {}
   }
 
+  const fetchMembershipPlans = async () => {
+    setPlansLoading(true)
+    try {
+      const { data } = await api.get('/plans')
+      setMembershipPlans(data.plans || [])
+    } catch {} finally { setPlansLoading(false) }
+  }
+
+  const fetchPendingPayments = async () => {
+    try {
+      const { data } = await api.get('/payments/my')
+      const pendings = (data.payments || []).filter((p) => p.status === 'pending')
+      setPendingPayments(pendings)
+    } catch {}
+  }
+
   const fetchAll = async () => {
     setLoading(true)
     try {
@@ -177,12 +222,6 @@ export default function UserDashboard() {
           name: u.name || '',
           phone: u.phone || '',
           goal: u.goal || '',
-          socialLinks: {
-            instagram: u.socialLinks?.instagram || '',
-            facebook: u.socialLinks?.facebook || '',
-            twitter: u.socialLinks?.twitter || '',
-            linkedin: u.socialLinks?.linkedin || '',
-          },
         })
       }
       if (attRes.status === 'fulfilled') setAttendance(attRes.value.data.attendance || [])
@@ -504,6 +543,91 @@ export default function UserDashboard() {
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            {/* Membership Pending Banner */}
+            {profile && profile.membership?.status !== 'active' && (
+              <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className={`rounded-2xl border p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${
+                pendingPayments.length > 0 ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-red-500/10 border-red-500/20'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${pendingPayments.length > 0 ? 'bg-yellow-500/20' : 'bg-red-500/20'}`}>
+                    <FaExclamationCircle className={`${pendingPayments.length > 0 ? 'text-yellow-400' : 'text-red-400'} text-lg`} />
+                  </div>
+                  <div>
+                    <h3 className={`font-black text-sm ${pendingPayments.length > 0 ? 'text-yellow-400' : 'text-red-400'}`} style={{ fontFamily: 'Oswald' }}>
+                      {pendingPayments.length > 0 ? 'PAYMENT PENDING — AWAITING APPROVAL' : 'MEMBERSHIP PENDING — PAYMENT REQUIRED'}
+                    </h3>
+                    <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                      {pendingPayments.length > 0
+                        ? `You have ${pendingPayments.length} pending payment(s) — ₹${pendingPayments[0]?.amount?.toLocaleString()} for ${pendingPayments[0]?.plan?.name || 'membership'}. Admin will approve shortly.`
+                        : profile.membership?.plan
+                          ? `Your ${profile.membership.plan.name || 'plan'} membership is pending. Complete payment to activate.`
+                          : 'No active membership. Choose a plan and pay to activate your membership and unlock workouts & diet plans.'}
+                    </p>
+                    {pendingPayments.length > 0 && pendingPayments[0]?.invoiceNumber && (
+                      <p className="text-gray-500 text-xs mt-1 font-mono">Ref: {pendingPayments[0].invoiceNumber}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {pendingPayments.length === 0 && (
+                    <>
+                      <Link to="/membership" className="px-5 py-2.5 bg-dark-300 border border-dark-500 hover:border-primary/40 text-white text-xs font-semibold rounded-xl transition-all">View Plans</Link>
+                      {membershipPlans.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <select value={payBilling} onChange={(e) => setPayBilling(e.target.value)} className="bg-dark-300 border border-dark-500 rounded-xl px-3 py-2.5 text-white text-xs">
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="half-yearly">Half-Yearly</option>
+                            <option value="yearly">Yearly</option>
+                          </select>
+                          <button onClick={() => setPayModal(membershipPlans.find((p) => p.isPopular) || membershipPlans[0])} className="btn-primary px-5 py-2.5 text-xs flex items-center gap-1.5 whitespace-nowrap">
+                            <FaCreditCard className="text-xs" /> Pay Now
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => navigate('/membership')} className="btn-primary px-5 py-2.5 text-xs flex items-center gap-1.5">
+                          <FaCreditCard className="text-xs" /> Choose Plan
+                        </button>
+                      )}
+                    </>
+                  )}
+                  {pendingPayments.length > 0 && (
+                    <button onClick={fetchPendingPayments} className="px-4 py-2 bg-dark-300 border border-dark-500 text-gray-400 hover:text-white text-xs rounded-xl">Refresh</button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Inline plan picker when pending and no active plan */}
+            {profile && profile.membership?.status !== 'active' && membershipPlans.length > 0 && pendingPayments.length === 0 && (
+              <div className="glass-card p-5">
+                <h3 className="text-white font-bold text-sm flex items-center gap-2 mb-4"><FaCreditCard className="text-primary" /> Choose a Plan to Activate</h3>
+                {plansLoading ? (
+                  <div className="flex justify-center py-6"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {membershipPlans.map((plan) => {
+                      const price = plan[payBilling === 'monthly' ? 'monthlyPrice' : payBilling === 'quarterly' ? 'quarterlyPrice' : payBilling === 'half-yearly' ? 'halfYearlyPrice' : 'yearlyPrice'] || plan.monthlyPrice
+                      return (
+                        <div key={plan._id} className={`relative rounded-xl border p-4 flex flex-col ${plan.isPopular ? 'border-primary/40 bg-primary/5' : 'border-dark-500 bg-dark-300'}`}>
+                          {plan.isPopular && <span className="absolute -top-2 left-3 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">POPULAR</span>}
+                          <h4 className="text-white font-bold text-sm" style={{ fontFamily: 'Oswald' }}>{plan.name}</h4>
+                          <p className="text-gray-500 text-xs mt-1 line-clamp-2">{plan.description || 'Perfect for commitment'}</p>
+                          <div className="mt-3 mb-3">
+                            <span className="text-white font-black text-xl" style={{ fontFamily: 'Oswald' }}>₹{price?.toLocaleString()}</span>
+                            <span className="text-gray-500 text-xs"> / {payBilling}</span>
+                          </div>
+                          <button onClick={() => setPayModal(plan)} className={`w-full py-2 rounded-xl text-xs font-semibold mt-auto ${plan.isPopular ? 'btn-primary' : 'bg-dark-400 text-white hover:bg-dark-500 border border-dark-500'}`}>
+                            Pay — {plan.name}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { icon: FaFire, label: 'This Month', value: `${totalThisMonth}`, unit: 'sessions', color: '#f4a261', bg: 'from-orange-500/10 to-transparent' },
@@ -582,29 +706,6 @@ export default function UserDashboard() {
                 </span>
               </div>
             </div>
-
-            {/* Membership Dates */}
-            {(profile?.membership?.joiningDate || profile?.membership?.paymentDate || profile?.membership?.nextPaymentDate) && (
-              <div className="glass-card p-6">
-                <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-                  <FaCalendarAlt className="text-primary" /> Membership Dates
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {[
-                    { label: 'Joining Date', value: profile.membership?.joiningDate, color: '#4361ee' },
-                    { label: 'Last Payment', value: profile.membership?.paymentDate, color: '#2ec27e' },
-                    { label: 'Next Payment', value: profile.membership?.nextPaymentDate, color: '#f59e0b' },
-                  ].map((item) => (
-                    <div key={item.label} className="p-4 bg-dark-300 rounded-xl">
-                      <div className="text-gray-500 text-xs mb-1">{item.label}</div>
-                      <div className="text-sm font-bold" style={{ color: item.value ? item.color : undefined }}>
-                        {item.value ? new Date(item.value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : <span className="text-gray-600">Not set</span>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Branch Card */}
             {profile?.branch && (
@@ -1251,7 +1352,24 @@ export default function UserDashboard() {
 
         {/* PROFILE TAB */}
         {activeTab === 'profile' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            {profile && profile.membership?.status !== 'active' && (
+              <div className={`rounded-2xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${pendingPayments.length > 0 ? 'bg-yellow-500/10 border-yellow-500/20' : 'bg-red-500/10 border-red-500/20'}`}>
+                <div className="flex items-center gap-3">
+                  <FaExclamationCircle className={pendingPayments.length > 0 ? 'text-yellow-400' : 'text-red-400'} />
+                  <div>
+                    <p className={`text-sm font-bold ${pendingPayments.length > 0 ? 'text-yellow-400' : 'text-red-400'}`} style={{ fontFamily: 'Oswald' }}>{pendingPayments.length > 0 ? 'PAYMENT PENDING' : 'MEMBERSHIP INACTIVE'}</p>
+                    <p className="text-gray-400 text-xs">Complete payment to activate membership — {pendingPayments.length > 0 ? `₹${pendingPayments[0]?.amount?.toLocaleString()} pending approval` : 'choose a plan immediately'}</p>
+                  </div>
+                </div>
+                {pendingPayments.length === 0 ? (
+                  <button onClick={() => { setActiveTab('overview'); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100) }} className="btn-primary px-4 py-2 text-xs flex items-center gap-1.5 whitespace-nowrap"><FaCreditCard className="text-xs" /> Pay Now</button>
+                ) : (
+                  <span className="text-xs bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full font-semibold">Awaiting Admin</span>
+                )}
+              </div>
+            )}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             {/* LEFT — Profile Info */}
             <div className="space-y-4">
@@ -1298,30 +1416,6 @@ export default function UserDashboard() {
                       )}
                     </div>
                   </div>
-                  {(profile?.socialLinks?.instagram || profile?.socialLinks?.facebook || profile?.socialLinks?.twitter || profile?.socialLinks?.linkedin) && (
-                    <div className="flex gap-2 mt-4 pt-4 border-t border-dark-400">
-                      {profile.socialLinks?.instagram && (
-                        <a href={profile.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-pink-500/10 rounded-lg flex items-center justify-center text-pink-400 hover:bg-pink-500/20 transition-colors" title="Instagram">
-                          <FaInstagram className="text-sm" />
-                        </a>
-                      )}
-                      {profile.socialLinks?.facebook && (
-                        <a href={profile.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-400 hover:bg-blue-500/20 transition-colors" title="Facebook">
-                          <FaFacebook className="text-sm" />
-                        </a>
-                      )}
-                      {profile.socialLinks?.twitter && (
-                        <a href={profile.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-sky-500/10 rounded-lg flex items-center justify-center text-sky-400 hover:bg-sky-500/20 transition-colors" title="Twitter">
-                          <FaTwitter className="text-sm" />
-                        </a>
-                      )}
-                      {profile.socialLinks?.linkedin && (
-                        <a href={profile.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="w-8 h-8 bg-blue-700/10 rounded-lg flex items-center justify-center text-blue-500 hover:bg-blue-700/20 transition-colors" title="LinkedIn">
-                          <FaLinkedin className="text-sm" />
-                        </a>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -1334,8 +1428,9 @@ export default function UserDashboard() {
                   {[
                     { label: 'Branch', value: profile?.branch?.name || '—', sub: profile?.branch?.location },
                     { label: 'Plan', value: profile?.membership?.plan?.name || '—' },
-                    { label: 'Package', value: profile?.membership?.package || '—' },
-                    { label: 'Joining Date', value: profile?.membership?.joiningDate ? new Date(profile.membership.joiningDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—' },
+                    { label: 'Package', value: formatPackage(profile?.membership?.package) || formatPackage(pendingPayments[0]?.billingCycle) || derivePackageFromDates(profile?.membership) || '—' },
+                    { label: 'Joining Date', value: profile?.membership?.joiningDate ? new Date(profile.membership.joiningDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : pendingPayments[0]?.startDate ? new Date(pendingPayments[0].startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—' },
+                    { label: 'Next Payment', value: (profile?.membership?.nextPaymentDate || profile?.membership?.endDate || pendingPayments[0]?.endDate) ? new Date(profile?.membership?.nextPaymentDate || profile?.membership?.endDate || pendingPayments[0].endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—' },
                     ...(profile?.personalTrainer ? [{ label: 'Personal Trainer', value: profile.personalTrainer.name, onClick: () => setTrainerModal({ ...profile.personalTrainer, type: 'Personal Trainer' }) }] : []),
                     ...(profile?.classTrainer ? [{ label: 'Class Trainer', value: profile.classTrainer.name, onClick: () => setTrainerModal({ ...profile.classTrainer, type: 'Class Trainer' }) }] : []),
                   ].map((item) => (
@@ -1405,36 +1500,12 @@ export default function UserDashboard() {
                   </div>
                 )}
 
-                {/* Social Links */}
-                <div>
-                  <label className="text-gray-400 text-xs mb-2 block font-medium">Social Media Links</label>
-                  <div className="space-y-2">
-                    {[
-                      { key: 'instagram', icon: FaInstagram, color: 'text-pink-400', placeholder: 'https://instagram.com/username' },
-                      { key: 'facebook', icon: FaFacebook, color: 'text-blue-400', placeholder: 'https://facebook.com/username' },
-                      { key: 'twitter', icon: FaTwitter, color: 'text-sky-400', placeholder: 'https://twitter.com/username' },
-                      { key: 'linkedin', icon: FaLinkedin, color: 'text-blue-500', placeholder: 'https://linkedin.com/in/username' },
-                    ].map(({ key, icon: Icon, color, placeholder }) => (
-                      <div key={key} className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-dark-400 rounded-lg flex items-center justify-center flex-shrink-0 border border-dark-500">
-                          <Icon className={`text-sm ${color}`} />
-                        </div>
-                        <input
-                          value={profileForm.socialLinks?.[key] || ''}
-                          onChange={(e) => setProfileForm((p) => ({ ...p, socialLinks: { ...p.socialLinks, [key]: e.target.value } }))}
-                          className="input-field text-sm flex-1"
-                          placeholder={placeholder}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
                 <motion.button type="submit" disabled={saving} whileHover={{ scale: 1.02 }} className="btn-primary py-3 w-full disabled:opacity-60">
                   {saving ? 'Saving...' : 'Save Changes'}
                 </motion.button>
               </form>
             </div>
+          </div>
           </div>
         )}
       </div>
@@ -1684,6 +1755,13 @@ export default function UserDashboard() {
               </button>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Payment Modal — Pay now from dashboard when pending */}
+      <AnimatePresence>
+        {payModal && (
+          <PaymentModal plan={payModal} billing={payBilling} onClose={() => { setPayModal(null); fetchAll(); fetchPendingPayments() }} />
         )}
       </AnimatePresence>
       </div>

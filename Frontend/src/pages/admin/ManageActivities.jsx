@@ -32,7 +32,6 @@ const navItems = [
   { to: '/admin/testimonials', label: 'Testimonials', icon: FaQuoteLeft },
   { to: '/admin/footer', label: 'Footer', icon: FaGlobe },
   { to: '/admin/theme', label: 'Theme', icon: FaPalette },
-  { to: '/admin/master-data', label: 'Master Data', icon: FaDatabase },
   { to: '/admin/legal', label: 'Legal', icon: FaFileAlt },
   { to: '/', label: 'View Site', icon: FaHome },
 ]

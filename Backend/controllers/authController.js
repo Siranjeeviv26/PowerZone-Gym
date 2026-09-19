@@ -19,18 +19,36 @@ exports.register = async (req, res) => {
     const existing = await User.findOne({ email })
     if (existing) return res.status(400).json({ message: 'Email already registered' })
 
-    // Use atomic counter to prevent race conditions
-    const counter = await mongoose.connection.db.collection('counters').findOneAndUpdate(
-      { _id: 'userRegNo' },
-      { $inc: { seq: 1 } },
-      { upsert: true, returnDocument: 'after' }
-    )
-    const year = new Date().getFullYear()
-    const regNo = `PZ-${year}-${String(counter.seq).padStart(4, '0')}`
-
-    const user = await User.create({ name, email, password, phone, goal, regNo })
+    // Retry loop for regNo duplicate race (handles concurrent registers + counter edge cases)
+    let user = null
+    let lastErr = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const counter = await mongoose.connection.db.collection('counters').findOneAndUpdate(
+        { _id: 'userRegNo' },
+        { $inc: { seq: 1 } },
+        { upsert: true, returnDocument: 'after' }
+      )
+      const year = new Date().getFullYear()
+      const seq = counter?.seq ?? counter?.value?.seq ?? 1
+      const regNo = `PZ-${year}-${String(seq).padStart(4, '0')}`
+      try {
+        user = await User.create({ name, email, password, phone, goal, regNo })
+        break
+      } catch (e) {
+        if (e.code === 11000 && e.keyPattern?.regNo) {
+          lastErr = e
+          continue // retry with next seq
+        }
+        throw e
+      }
+    }
+    if (!user) throw lastErr || new Error('Failed to create user')
     sendToken(user, 201, res)
   } catch (err) {
+    // Duplicate email handled above, but keep fallback
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return res.status(400).json({ message: 'Email already registered' })
+    }
     res.status(500).json({ message: err.message })
   }
 }

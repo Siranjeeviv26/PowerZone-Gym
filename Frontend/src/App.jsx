@@ -37,7 +37,6 @@ import ManageActivities from './pages/admin/ManageActivities'
 import ManageContent from './pages/admin/ManageContent'
 import ManageNavbar from './pages/admin/ManageNavbar'
 import ManageTheme from './pages/admin/ManageTheme'
-import ManageMasterData from './pages/admin/ManageMasterData'
 import ManagePayments from './pages/admin/ManagePayments'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
@@ -91,7 +90,6 @@ function App() {
           <Route path="admin/content" element={<AdminRoute><ManageContent /></AdminRoute>} />
           <Route path="admin/navbar" element={<AdminRoute><ManageNavbar /></AdminRoute>} />
           <Route path="admin/theme" element={<AdminRoute><ManageTheme /></AdminRoute>} />
-          <Route path="admin/master-data" element={<AdminRoute><ManageMasterData /></AdminRoute>} />
           <Route path="admin/payments" element={<AdminRoute><ManagePayments /></AdminRoute>} />
         </Route>
       </Routes>

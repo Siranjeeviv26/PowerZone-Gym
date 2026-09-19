@@ -1,6 +1,8 @@
+const crypto = require('crypto')
 const MembershipPlan = require('../models/MembershipPlan')
 const User = require('../models/User')
 const Payment = require('../models/Payment')
+const { getRazorpayInstance } = require('../utils/razorpay')
 
 exports.getPlans = async (req, res) => {
   try {
@@ -152,15 +154,146 @@ exports.purchasePlan = async (req, res) => {
     })
 
     if (!isPending) {
+      const pkgMap = { monthly: 'monthly', quarterly: 'quarterly', 'half-yearly': 'half-yearly', yearly: 'annual' }
       await User.findByIdAndUpdate(req.user.id, {
         'membership.plan': planId,
         'membership.startDate': startDate,
         'membership.endDate': endDate,
         'membership.status': 'active',
+        'membership.package': pkgMap[billingCycle] || 'monthly',
+        'membership.nextPaymentDate': endDate,
+        'membership.paymentDate': new Date(),
+        'membership.joiningDate': startDate,
       })
     }
 
     res.status(201).json({ success: true, payment, pending: isPending })
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+exports.createRazorpayOrder = async (req, res) => {
+  try {
+    const { planId, billingCycle } = req.body
+    if (!planId) return res.status(400).json({ message: 'Plan ID is required' })
+
+    const plan = await MembershipPlan.findById(planId)
+    if (!plan) return res.status(404).json({ message: 'Plan not found' })
+    if (!plan.isActive) return res.status(400).json({ message: 'Cannot purchase inactive plan' })
+
+    const billingMap = {
+      monthly:      { months: 1,  priceKey: 'monthlyPrice' },
+      quarterly:    { months: 3,  priceKey: 'quarterlyPrice' },
+      'half-yearly':{ months: 6,  priceKey: 'halfYearlyPrice' },
+      yearly:       { months: 12, priceKey: 'yearlyPrice' },
+    }
+    const { priceKey } = billingMap[billingCycle] || billingMap.monthly
+    const amount = plan[priceKey] || plan.monthlyPrice
+    if (!amount || amount <= 0) return res.status(400).json({ message: 'Invalid plan pricing' })
+
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({ message: 'Razorpay not configured on server' })
+    }
+
+    const razorpay = getRazorpayInstance()
+    if (!razorpay) return res.status(500).json({ message: 'Razorpay initialization failed' })
+
+    const options = {
+      amount: Math.round(amount * 100), // paise
+      currency: 'INR',
+      receipt: `pz_${Date.now()}_${planId.toString().slice(-6)}`,
+      notes: { planId: planId.toString(), billingCycle: billingCycle || 'monthly', userId: req.user.id.toString() },
+    }
+
+    const order = await razorpay.orders.create(options)
+
+    res.json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
+      plan: { name: plan.name, amount },
+    })
+  } catch (err) {
+    console.error('Razorpay order error:', err)
+    res.status(500).json({ message: err.message || 'Failed to create Razorpay order' })
+  }
+}
+
+exports.verifyRazorpayPayment = async (req, res) => {
+  try {
+    const { planId, billingCycle, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ message: 'Missing Razorpay verification params' })
+    }
+    if (!planId) return res.status(400).json({ message: 'Plan ID is required' })
+
+    const expected = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex')
+
+    if (expected !== razorpay_signature) {
+      return res.status(400).json({ message: 'Payment verification failed — invalid signature' })
+    }
+
+    const plan = await MembershipPlan.findById(planId)
+    if (!plan) return res.status(404).json({ message: 'Plan not found' })
+
+    const billingMap = {
+      monthly:      { months: 1,  priceKey: 'monthlyPrice' },
+      quarterly:    { months: 3,  priceKey: 'quarterlyPrice' },
+      'half-yearly':{ months: 6,  priceKey: 'halfYearlyPrice' },
+      yearly:       { months: 12, priceKey: 'yearlyPrice' },
+    }
+    const { months, priceKey } = billingMap[billingCycle] || billingMap.monthly
+    const amount = plan[priceKey] || plan.monthlyPrice
+
+    const startDate = new Date()
+    const endDate = new Date(startDate)
+    endDate.setMonth(endDate.getMonth() + months)
+
+    const payment = await Payment.create({
+      user: req.user.id,
+      plan: planId,
+      amount,
+      paymentMethod: 'razorpay',
+      billingCycle,
+      status: 'success',
+      transactionId: razorpay_payment_id,
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      razorpaySignature: razorpay_signature,
+      startDate,
+      endDate,
+    })
+
+    const pkgMap2 = { monthly: 'monthly', quarterly: 'quarterly', 'half-yearly': 'half-yearly', yearly: 'annual' }
+    await User.findByIdAndUpdate(req.user.id, {
+      'membership.plan': planId,
+      'membership.startDate': startDate,
+      'membership.endDate': endDate,
+      'membership.status': 'active',
+      'membership.package': pkgMap2[billingCycle] || 'monthly',
+      'membership.nextPaymentDate': endDate,
+      'membership.paymentDate': new Date(),
+      'membership.joiningDate': startDate,
+    })
+
+    res.json({ success: true, payment, message: 'Payment verified and membership activated' })
+  } catch (err) {
+    console.error('Verify error:', err)
+    res.status(500).json({ message: err.message || 'Verification failed' })
+  }
+}
+
+exports.getRazorpayKey = async (req, res) => {
+  try {
+    if (!process.env.RAZORPAY_KEY_ID) return res.status(500).json({ message: 'Razorpay not configured' })
+    res.json({ success: true, keyId: process.env.RAZORPAY_KEY_ID })
   } catch (err) {
     res.status(500).json({ message: err.message })
   }

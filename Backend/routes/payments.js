@@ -57,11 +57,15 @@ router.put('/:id/approve', protect, authorize('admin'), async (req, res) => {
     payment.status = 'success'
     await payment.save()
 
+    const pkgMap = { monthly: 'monthly', quarterly: 'quarterly', 'half-yearly': 'half-yearly', yearly: 'annual' }
+    const billingCycle = payment.billingCycle || 'monthly'
     await User.findByIdAndUpdate(payment.user, {
       'membership.plan': payment.plan,
       'membership.startDate': payment.startDate,
       'membership.endDate': payment.endDate,
       'membership.status': 'active',
+      'membership.package': pkgMap[billingCycle] || 'monthly',
+      'membership.nextPaymentDate': payment.endDate,
       'membership.joiningDate': payment.startDate,
       'membership.paymentDate': new Date(),
     })

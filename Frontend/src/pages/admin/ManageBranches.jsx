@@ -38,7 +38,6 @@ const navItems = [
   { to: '/admin/navbar', label: 'Navbar', icon: FaLink },
   { to: '/admin/footer', label: 'Footer', icon: FaGlobe },
   { to: '/admin/theme', label: 'Theme', icon: FaPalette },
-  { to: '/admin/master-data', label: 'Master Data', icon: FaDatabase },
   { to: '/admin/workouts', label: 'Workouts', icon: FaDumbbell },
   { to: '/admin/diet-plans', label: 'Diet Plans', icon: FaAppleAlt },
   { to: '/admin/gallery', label: 'Gallery', icon: FaImages },

@@ -44,6 +44,7 @@ router.put('/payment', protect, authorize('admin'), upload.single('qrCodeImage')
     if (req.file) updates.qrCodeImage = req.file.path
     if (updates.cashEnabled !== undefined) updates.cashEnabled = updates.cashEnabled === 'true' || updates.cashEnabled === true
     if (updates.qrEnabled !== undefined) updates.qrEnabled = updates.qrEnabled === 'true' || updates.qrEnabled === true
+    if (updates.razorpayEnabled !== undefined) updates.razorpayEnabled = updates.razorpayEnabled === 'true' || updates.razorpayEnabled === true
     const settings = await PaymentSettings.findOneAndUpdate(
       {},
       { $set: updates },

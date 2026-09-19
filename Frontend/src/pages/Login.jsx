@@ -74,7 +74,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
+    <div className="h-screen flex overflow-hidden">
       {/* LEFT PANEL — Branding */}
       <div className="hidden lg:flex lg:w-[55%] relative flex-col justify-between p-12 overflow-hidden">
         <div className="absolute inset-0">
@@ -126,7 +126,7 @@ export default function Login() {
       </div>
 
       {/* RIGHT PANEL — Form */}
-      <div className="flex-1 flex flex-col justify-center bg-dark relative overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center bg-dark relative overflow-hidden">
         {/* Mobile logo */}
         <div className="lg:hidden px-8 pt-8 pb-4">
           <Link to="/" className="inline-flex items-center gap-2.5">
@@ -143,7 +143,7 @@ export default function Login() {
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="px-8 md:px-16 py-10 max-w-md mx-auto w-full"
+          className="px-8 md:px-16 py-8 max-w-md mx-auto w-full"
         >
           <div className="mb-8">
             <h2 className="text-3xl font-black text-white" style={{ fontFamily: 'Oswald' }}>{c.formTitle}</h2>
@@ -218,16 +218,6 @@ export default function Login() {
               </Link>
             </p>
           </div>
-
-          {import.meta.env.DEV && (
-            <div className="mt-6 p-4 bg-dark-200 rounded-2xl border border-dark-400">
-              <p className="text-gray-600 text-xs font-medium mb-2 uppercase tracking-wider">Demo Credentials</p>
-              <div className="space-y-1">
-                <p className="text-gray-400 text-xs">Admin: admin@powerzone.com / admin123</p>
-                <p className="text-gray-400 text-xs">User: user@powerzone.com / user123</p>
-              </div>
-            </div>
-          )}
         </motion.div>
       </div>
     </div>

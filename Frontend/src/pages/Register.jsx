@@ -93,7 +93,7 @@ export default function Register() {
   const fc = (field, extra = '') => fieldClass(errors, field, `input-field ${extra}`.trim())
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
+    <div className="h-screen flex overflow-hidden">
       {/* LEFT PANEL */}
       <div className="hidden lg:flex lg:w-[45%] relative flex-col justify-between p-12 overflow-hidden">
         <div className="absolute inset-0">
@@ -144,7 +144,7 @@ export default function Register() {
       </div>
 
       {/* RIGHT PANEL */}
-      <div className="flex-1 flex flex-col justify-center bg-dark overflow-y-auto">
+      <div className="flex-1 flex flex-col justify-center bg-dark overflow-hidden">
         <div className="lg:hidden px-8 pt-8 pb-2">
           <Link to="/" className="inline-flex items-center gap-2.5">
             <div className="w-9 h-9 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
@@ -157,13 +157,13 @@ export default function Register() {
         </div>
 
         <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}
-          className="px-8 md:px-14 py-8 max-w-lg mx-auto w-full">
-          <div className="mb-6">
+          className="px-8 md:px-14 py-6 max-w-lg mx-auto w-full">
+          <div className="mb-5">
             <h2 className="text-3xl font-black text-white" style={{ fontFamily: 'Oswald' }}>{c.formTitle}</h2>
             <p className="text-gray-400 mt-1 text-sm">{c.formSubtitle}</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
                 <label className="text-gray-400 text-xs font-medium mb-1.5 block uppercase tracking-wider">Full Name <span className="text-red-400">*</span></label>

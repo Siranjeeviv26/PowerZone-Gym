@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { getPlans, createPlan, updatePlan, deletePlan, purchasePlan, uploadOffer, removeOffer } = require('../controllers/planController')
+const { getPlans, createPlan, updatePlan, deletePlan, purchasePlan, uploadOffer, removeOffer, createRazorpayOrder, verifyRazorpayPayment, getRazorpayKey } = require('../controllers/planController')
 const { protect, authorize } = require('../middleware/auth')
 const upload = require('../middleware/upload')
 
@@ -9,6 +9,9 @@ router.post('/', protect, authorize('admin'), createPlan)
 router.put('/:id', protect, authorize('admin'), updatePlan)
 router.delete('/:id', protect, authorize('admin'), deletePlan)
 router.post('/purchase', protect, purchasePlan)
+router.post('/razorpay/order', protect, createRazorpayOrder)
+router.post('/razorpay/verify', protect, verifyRazorpayPayment)
+router.get('/razorpay/key', protect, getRazorpayKey)
 router.put('/:id/offer', protect, authorize('admin'), upload.single('image'), uploadOffer)
 router.delete('/:id/offer', protect, authorize('admin'), removeOffer)
 

@@ -43,6 +43,7 @@ exports.register = async (req, res) => {
       }
     }
     if (!user) throw lastErr || new Error('Failed to create user')
+    
     sendToken(user, 201, res)
   } catch (err) {
     // Duplicate email handled above, but keep fallback
@@ -93,7 +94,7 @@ exports.forgotPassword = async (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
     const resetUrl = `${frontendUrl}/reset-password/${rawToken}`
 
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    if (process.env.RESEND_API_KEY) {
       await sendResetEmail({ to: user.email, name: user.name, resetUrl })
       res.json({ success: true, message: 'Password reset link sent to your email' })
     } else {

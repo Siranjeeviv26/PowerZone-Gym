@@ -2,6 +2,7 @@ const User = require('../models/User')
 const DietPlan = require('../models/DietPlan')
 const WorkoutProgram = require('../models/WorkoutProgram')
 const mongoose = require('mongoose')
+const { sendWelcomeEmail } = require('../utils/mailer')
 
 // Valid membership status values
 const VALID_MEMBERSHIP_STATUS = ['active', 'expired', 'pending', 'frozen']
@@ -99,9 +100,12 @@ exports.checkIn = async (req, res) => {
   try {
     const { duration, workoutType, notes } = req.body
 
-    // Validate duration if provided
-    if (duration && (isNaN(duration) || duration <= 0)) {
-      return res.status(400).json({ message: 'Invalid duration value' })
+    // Require both workoutType (Workout Session) and duration (Duration in minutes)
+    if (!workoutType || !workoutType.trim()) {
+      return res.status(400).json({ message: 'Workout Session is required' })
+    }
+    if (!duration || isNaN(duration) || duration <= 0) {
+      return res.status(400).json({ message: 'Duration (minutes) is required and must be a positive number' })
     }
 
     const today = new Date()
@@ -323,6 +327,20 @@ exports.createUser = async (req, res) => {
       referredBy: referredBy || undefined,
       branch: branch || undefined,
     })
+
+    // Send welcome email with credentials (non-blocking) - only for admin-created users
+    if (process.env.RESEND_API_KEY) {
+      const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`
+      sendWelcomeEmail({
+        to: user.email,
+        name: user.name,
+        email: user.email,
+        password: req.body.password || 'changeme123', // plain password only available here
+        regNo: user.regNo,
+        loginUrl,
+      }).catch((e) => console.error('Welcome email failed:', e.message))
+    }
+
     user.password = undefined
     res.status(201).json({ success: true, user })
   } catch (err) {

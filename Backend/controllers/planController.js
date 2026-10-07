@@ -3,6 +3,7 @@ const MembershipPlan = require('../models/MembershipPlan')
 const User = require('../models/User')
 const Payment = require('../models/Payment')
 const { getRazorpayInstance } = require('../utils/razorpay')
+const { sendPaymentReceipt } = require('../utils/mailer')
 
 exports.getPlans = async (req, res) => {
   try {
@@ -165,6 +166,20 @@ exports.purchasePlan = async (req, res) => {
         'membership.paymentDate': new Date(),
         'membership.joiningDate': startDate,
       })
+
+      // Send payment receipt email (non-blocking)
+      if (process.env.RESEND_API_KEY) {
+const user = await User.findById(req.user.id).select('name email phone regNo')
+        if (user) {
+          sendPaymentReceipt({
+            to: user.email,
+            name: user.name,
+            payment,
+            plan,
+            user,
+          }).catch((e) => console.error('Payment receipt email failed:', e.message))
+        }
+      }
     }
 
     res.status(201).json({ success: true, payment, pending: isPending })
@@ -282,6 +297,20 @@ exports.verifyRazorpayPayment = async (req, res) => {
       'membership.paymentDate': new Date(),
       'membership.joiningDate': startDate,
     })
+
+    // Send payment receipt email (non-blocking)
+    if (process.env.RESEND_API_KEY) {
+      const user = await User.findById(req.user.id).select('name email phone regNo')
+      if (user) {
+        sendPaymentReceipt({
+          to: user.email,
+          name: user.name,
+          payment,
+          plan,
+          user,
+        }).catch((e) => console.error('Payment receipt email failed:', e.message))
+      }
+    }
 
     res.json({ success: true, payment, message: 'Payment verified and membership activated' })
   } catch (err) {

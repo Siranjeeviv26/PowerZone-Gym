@@ -2,7 +2,9 @@ const express = require('express')
 const router = express.Router()
 const Payment = require('../models/Payment')
 const User = require('../models/User')
+const MembershipPlan = require('../models/MembershipPlan')
 const { protect, authorize } = require('../middleware/auth')
+const { sendPaymentReceipt } = require('../utils/mailer')
 
 router.get('/my', protect, async (req, res) => {
   try {
@@ -15,14 +17,18 @@ router.get('/my', protect, async (req, res) => {
 
 router.get('/', protect, authorize('admin'), async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query
-    const payments = await Payment.find()
+    const { page = 1, limit = 20, user, status } = req.query
+    const filter = {}
+    if (user) filter.user = user
+    if (status && status !== 'all') filter.status = status
+    const effectiveLimit = user ? Number(limit) || 100 : Number(limit) || 20
+    const payments = await Payment.find(filter)
       .populate('user', 'name email')
       .populate('plan', 'name')
       .sort('-createdAt')
-      .limit(limit)
-      .skip((page - 1) * limit)
-    const total = await Payment.countDocuments()
+      .limit(effectiveLimit)
+      .skip((Number(page) - 1) * effectiveLimit)
+    const total = await Payment.countDocuments(filter)
     const totalRevenue = await Payment.aggregate([{ $match: { status: 'success' } }, { $group: { _id: null, total: { $sum: '$amount' } } }])
     res.json({ success: true, payments, total, totalRevenue: totalRevenue[0]?.total || 0 })
   } catch (err) {
@@ -69,6 +75,21 @@ router.put('/:id/approve', protect, authorize('admin'), async (req, res) => {
       'membership.joiningDate': payment.startDate,
       'membership.paymentDate': new Date(),
     })
+
+    // Send payment receipt email (non-blocking)
+    if (process.env.RESEND_API_KEY) {
+      const user = await User.findById(payment.user).select('name email phone regNo')
+      const plan = await MembershipPlan.findById(payment.plan._id || payment.plan).select('name')
+      if (user && plan) {
+        sendPaymentReceipt({
+          to: user.email,
+          name: user.name,
+          payment,
+          plan,
+          user,
+        }).catch((e) => console.error('Payment receipt email failed:', e.message))
+      }
+    }
 
     res.json({ success: true, payment })
   } catch (err) {

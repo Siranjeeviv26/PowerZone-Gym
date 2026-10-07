@@ -162,8 +162,8 @@ export default function PaymentModal({ plan, billing, onClose }) {
     )
   }
 
-  const hasCash = settings.cashEnabled !== false
-  const hasOnline = settings.razorpayEnabled !== false
+  const hasCash = settings.cashEnabled === true
+  const hasOnline = settings.razorpayEnabled === true
   const hasQr = settings.qrEnabled === true && settings.qrCodeImage
 
   return (

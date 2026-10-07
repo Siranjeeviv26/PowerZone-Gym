@@ -8,6 +8,7 @@ import api from '../../utils/api'
 import toast from 'react-hot-toast'
 import { validate, required, email, minLen, maxLen, phone, passwordStrength, fieldClass } from '../../utils/validate'
 import PhoneInput from '../../components/shared/PhoneInput'
+import MemberPurchaseHistory from '../../components/admin/MemberPurchaseHistory'
 
 const Err = ({ msg }) => msg ? <p className="text-red-400 text-xs mt-1">{msg}</p> : null
 
@@ -91,7 +92,7 @@ export default function ManageUsers() {
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 15
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024)
-  const [modal, setModal] = useState(null) // null | 'add' | 'edit' | 'trainer' | 'transfer'
+  const [modal, setModal] = useState(null) // null | 'add' | 'edit' | 'trainer' | 'transfer' | 'view'
   const [selected, setSelected] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
@@ -106,6 +107,9 @@ export default function ManageUsers() {
   const [referredByUser, setReferredByUser] = useState(null)
   const [memberWorkoutPlans, setMemberWorkoutPlans] = useState([])
   const [memberDietPlans, setMemberDietPlans] = useState([])
+  const [memberPayments, setMemberPayments] = useState([])
+  const [paymentsLoading, setPaymentsLoading] = useState(false)
+  const [viewTab, setViewTab] = useState('membership') // 'membership' | 'purchases'
   const searchTimerRef = useRef(null)
 
   const { pathname } = useLocation()
@@ -252,10 +256,25 @@ export default function ManageUsers() {
   const closeModal = () => {
     setModal(null)
     setSelected(null)
+    setMemberPayments([])
+    setViewTab('membership')
     setFormErrors({})
     setReferredBySearch('')
     setReferredBySuggestions([])
     setReferredByUser(null)
+  }
+
+  const fetchMemberPayments = async (userId) => {
+    try {
+      setPaymentsLoading(true)
+      const { data } = await api.get('/payments', { params: { user: userId, limit: 50 } })
+      setMemberPayments(data.payments || [])
+    } catch (err) {
+      console.error('Failed to fetch member payments:', err)
+      setMemberPayments([])
+    } finally {
+      setPaymentsLoading(false)
+    }
   }
 
   const handleSave = async (e) => {
@@ -961,6 +980,29 @@ export default function ManageUsers() {
                 <button onClick={() => setModal(null)} className="text-gray-400 hover:text-white"><FaTimes /></button>
               </div>
 
+              {/* Tabs */}
+              <div className="flex gap-1 px-7 py-3 border-b border-dark-400 bg-dark-200/50">
+                <button
+                  onClick={() => { setViewTab('membership'); fetchMemberPayments(selected._id) }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    viewTab === 'membership' ? 'bg-primary text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-dark-300'
+                  }`}
+                >
+                  <FaCrown className="text-xs mr-1" /> Membership
+                </button>
+                <button
+                  onClick={() => { setViewTab('purchases'); fetchMemberPayments(selected._id) }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+                    viewTab === 'purchases' ? 'bg-primary text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-dark-300'
+                  }`}
+                >
+                  <FaMoneyBillWave className="text-xs" /> Purchase History
+                  {memberPayments.length > 0 && (
+                    <span className="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">{memberPayments.length}</span>
+                  )}
+                </button>
+              </div>
+
               <div className="flex gap-0 divide-x divide-dark-400">
                 {/* Left column — identity */}
                 <div className="w-72 flex-shrink-0 p-6 flex flex-col items-center text-center">
@@ -989,52 +1031,63 @@ export default function ManageUsers() {
                   </div>
                 </div>
 
-                {/* Right column — membership & assignment */}
+                {/* Right column — membership & assignment / purchase history */}
                 <div className="flex-1 p-6">
-                  <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-semibold">Membership</p>
-                  <div className="grid grid-cols-2 gap-3 mb-5">
-                    {[
-                      { label: 'Plan', value: selected.membership?.plan?.name || 'None', icon: FaCrown },
-                      { label: 'Package', value: formatPackage(selected.membership?.package) || derivePackageFromDates(selected.membership) || '—', icon: FaCalendar },
-                      { label: 'Personal Trainer', value: selected.personalTrainer?.name || '—', icon: FaUserTie },
-                      { label: 'Class Trainer', value: selected.classTrainer?.name || '—', icon: FaDumbbell },
-                      { label: 'Branch', value: selected.branch?.name || '—', icon: FaMapMarkerAlt },
-                    ].map(({ label, value, icon: Icon }) => (
-                      <div key={label} className="p-3 bg-dark-300 rounded-xl">
-                        <div className="flex items-center gap-2 mb-1"><Icon className="text-primary text-xs" /><span className="text-gray-500 text-xs">{label}</span></div>
-                        <p className="text-gray-200 text-sm font-medium truncate">{value}</p>
-                      </div>
-                    ))}
-                    {selected.membership?.startDate && (
-                      <div className="p-3 bg-dark-300 rounded-xl col-span-2">
-                        <p className="text-gray-500 text-xs mb-1">Membership Period</p>
-                        <p className="text-gray-200 text-sm">{new Date(selected.membership.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} → {selected.membership.endDate ? new Date(selected.membership.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Ongoing'}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {(selected.membership?.joiningDate || selected.membership?.paymentDate || selected.membership?.nextPaymentDate || selected.membership?.endDate) && (
+                  {viewTab === 'membership' && (
                     <>
-                      <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-semibold">Payment Dates</p>
-                      <div className="grid grid-cols-3 gap-3 mb-5">
+                      <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-semibold">Membership</p>
+                      <div className="grid grid-cols-2 gap-3 mb-5">
                         {[
-                          { label: 'Joining Date', value: selected.membership?.joiningDate, color: 'text-blue-400' },
-                          { label: 'Payment Date', value: selected.membership?.paymentDate, color: 'text-green-400' },
-                          { label: 'Next Payment', value: selected.membership?.nextPaymentDate || selected.membership?.endDate, color: 'text-yellow-400' },
-                        ].map(({ label, value, color }) => (
+                          { label: 'Plan', value: selected.membership?.plan?.name || 'None', icon: FaCrown },
+                          { label: 'Package', value: formatPackage(selected.membership?.package) || derivePackageFromDates(selected.membership) || '—', icon: FaCalendar },
+                          { label: 'Personal Trainer', value: selected.personalTrainer?.name || '—', icon: FaUserTie },
+                          { label: 'Class Trainer', value: selected.classTrainer?.name || '—', icon: FaDumbbell },
+                          { label: 'Branch', value: selected.branch?.name || '—', icon: FaMapMarkerAlt },
+                        ].map(({ label, value, icon: Icon }) => (
                           <div key={label} className="p-3 bg-dark-300 rounded-xl">
-                            <p className="text-gray-500 text-xs mb-1">{label}</p>
-                            <p className={`text-sm font-semibold ${color}`}>{value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</p>
+                            <div className="flex items-center gap-2 mb-1"><Icon className="text-primary text-xs" /><span className="text-gray-500 text-xs">{label}</span></div>
+                            <p className="text-gray-200 text-sm font-medium truncate">{value}</p>
                           </div>
                         ))}
+                        {selected.membership?.startDate && (
+                          <div className="p-3 bg-dark-300 rounded-xl col-span-2">
+                            <p className="text-gray-500 text-xs mb-1">Membership Period</p>
+                            <p className="text-gray-200 text-sm">{new Date(selected.membership.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} → {selected.membership.endDate ? new Date(selected.membership.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Ongoing'}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {(selected.membership?.joiningDate || selected.membership?.paymentDate || selected.membership?.nextPaymentDate || selected.membership?.endDate) && (
+                        <>
+                          <p className="text-gray-500 text-xs uppercase tracking-widest mb-3 font-semibold">Payment Dates</p>
+                          <div className="grid grid-cols-3 gap-3 mb-5">
+                            {[
+                              { label: 'Joining Date', value: selected.membership?.joiningDate, color: 'text-blue-400' },
+                              { label: 'Payment Date', value: selected.membership?.paymentDate, color: 'text-green-400' },
+                              { label: 'Next Payment', value: selected.membership?.nextPaymentDate || selected.membership?.endDate, color: 'text-yellow-400' },
+                            ].map(({ label, value, color }) => (
+                              <div key={label} className="p-3 bg-dark-300 rounded-xl">
+                                <p className="text-gray-500 text-xs mb-1">{label}</p>
+                                <p className={`text-sm font-semibold ${color}`}>{value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+
+                      <div className="flex gap-3 mt-auto pt-2">
+                        <button onClick={() => { setModal(null); openEdit(selected) }} className="flex-1 btn-primary py-2.5 text-sm flex items-center justify-center gap-2"><FaEdit className="text-xs" /> Edit Member</button>
+                        <button onClick={() => setModal(null)} className="px-6 bg-dark-300 hover:bg-dark-400 text-gray-300 rounded-full transition-colors text-sm">Close</button>
                       </div>
                     </>
                   )}
 
-                  <div className="flex gap-3 mt-auto pt-2">
-                    <button onClick={() => { setModal(null); openEdit(selected) }} className="flex-1 btn-primary py-2.5 text-sm flex items-center justify-center gap-2"><FaEdit className="text-xs" /> Edit Member</button>
-                    <button onClick={() => setModal(null)} className="px-6 bg-dark-300 hover:bg-dark-400 text-gray-300 rounded-full transition-colors text-sm">Close</button>
-                  </div>
+                  {viewTab === 'purchases' && (
+                    <MemberPurchaseHistory
+                      member={selected}
+                      onClose={() => setModal(null)}
+                    />
+                  )}
                 </div>
               </div>
             </motion.div>

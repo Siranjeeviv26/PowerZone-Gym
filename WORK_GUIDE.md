@@ -62,7 +62,7 @@ dispatch(setUser(updatedUserObject))
 2. Backend generates 32-byte raw token via `crypto.randomBytes(32)`
 3. SHA-256 hash of token stored in `user.resetPasswordToken`, expiry in `user.resetPasswordExpire` (1 hour)
 4. Raw token sent in branded HTML email as `<FRONTEND_URL>/reset-password/<rawToken>`
-5. **Dev fallback:** if `EMAIL_USER`/`EMAIL_PASS` are not configured, the API response includes `resetUrl` directly
+5. **Dev fallback:** if `RESEND_API_KEY` is not configured, the API response includes `resetUrl` directly
 6. User submits new password → `POST /api/auth/reset-password/:token`
 7. Backend hashes the URL token, queries `{ resetPasswordToken: hash, resetPasswordExpire: { $gt: now } }`
 8. On match: sets new password, clears token fields, returns new JWT
@@ -620,9 +620,7 @@ Mongoose silently discards fields that are not defined in the schema. If you add
 | `CLOUDINARY_API_KEY` | your Cloudinary key |
 | `CLOUDINARY_API_SECRET` | your Cloudinary secret |
 | `FRONTEND_URL` | `https://power-zone-gym-frontend.vercel.app` |
-| `EMAIL_SERVICE` | `gmail` |
-| `EMAIL_USER` | your Gmail address |
-| `EMAIL_PASS` | your Gmail app password |
+| `RESEND_API_KEY` | your Resend API key (re_xxxxxxxxxxxx) |
 
 > Do **NOT** set `PORT` — Render injects it automatically.
 
@@ -765,7 +763,7 @@ backend/
 ├── routes/                     19 Express routers (includes offers.js)
 ├── swagger.js                  OpenAPI 3.0 spec — served at /api/docs
 └── utils/
-    └── mailer.js               Nodemailer transporter + branded HTML template
+    └── mailer.js               Resend email utility + branded HTML template
 
 frontend/src/
 ├── components/

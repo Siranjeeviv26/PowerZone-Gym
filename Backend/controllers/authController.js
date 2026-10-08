@@ -63,6 +63,20 @@ exports.login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' })
     }
     if (!user.isActive) return res.status(401).json({ message: 'Account is deactivated' })
+
+    // Transparently re-hash legacy hashes at the current cost factor.
+    // bcrypt stores its rounds inside the hash, so old accounts would otherwise
+    // keep paying the old cost on every login. One-time cost per account.
+    const storedCost = Number(String(user.password).split('$')[2]) || 0
+    if (storedCost > 10) {
+      try {
+        user.password = password
+        await user.save()
+      } catch (e) {
+        console.error('Password cost upgrade skipped:', e.message)
+      }
+    }
+
     // For trainers: if no user avatar, pull image from Trainer profile so Navbar shows their photo
     if (user.role === 'trainer' && !user.avatar) {
       const trainer = await Trainer.findOne({ user: user._id }).select('image')

@@ -466,7 +466,7 @@ Opening a member in **Admin → Members → view** shows two tabs. The **Purchas
 
 | Service | URL |
 |---|---|
-| Frontend (Vercel) | `https://power-zone-gym-frontend.vercel.app` |
+| Frontend (Vercel) | `https://power-zone-one.vercel.app/` |
 | Backend API (Render) | `https://powerzone-gym-backend.onrender.com/api` |
 | Swagger API Docs | `https://powerzone-gym-backend.onrender.com/api/docs` |
 

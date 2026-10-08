@@ -60,7 +60,9 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next()
-  this.password = await bcrypt.hash(this.password, 12)
+  // Cost 10 (OWASP minimum). bcryptjs is pure-JS and blocks the event loop,
+  // so each extra round adds real latency on a free-tier CPU.
+  this.password = await bcrypt.hash(this.password, 10)
   next()
 })
 

@@ -1,10 +1,26 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "powerzone-gym",
-  "compatibility_date": "2026-10-07",
-  "assets": {
-    "directory": "./dist",
-    "not_found_handling": "single-page-application",
-    "html_handling": "auto-trailing-slash"
-  }
+  "name": "powerzone-gym-api",
+  "main": "worker.mjs",
+  // Must be >= 2025-03-20 for node:net/node:tls (MongoDB driver) and
+  // <= the newest date supported by your local workerd (2026-05-03 on wrangler 4.86).
+  "compatibility_date": "2026-05-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "NODE_ENV": "production"
+    // Everything else is a secret — set once per Worker:
+    //   npx wrangler secret put MONGO_URI
+    //   npx wrangler secret put JWT_SECRET
+    //   npx wrangler secret put JWT_EXPIRE
+    //   npx wrangler secret put FRONTEND_URL
+    //   npx wrangler secret put RESEND_API_KEY
+    //   npx wrangler secret put CLOUDINARY_CLOUD_NAME
+    //   npx wrangler secret put CLOUDINARY_API_KEY
+    //   npx wrangler secret put CLOUDINARY_API_SECRET
+    //   npx wrangler secret put RAZORPAY_KEY_ID
+    //   npx wrangler secret put RAZORPAY_KEY_SECRET
+    //   npx wrangler secret put RAZORPAY_WEBHOOK_SECRET
+    //   npx wrangler secret put PAYMENT_PROVIDER
+  },
+  "observability": { "enabled": true }
 }

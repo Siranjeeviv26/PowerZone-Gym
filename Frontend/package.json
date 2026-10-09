@@ -1,31 +1,38 @@
 {
-  "name": "gym-frontend",
-  "private": true,
+  "name": "gym-backend",
   "version": "1.0.0",
-  "type": "module",
+  "description": "PowerZone Gym REST API",
+  "main": "server.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "node --check server.js && node --check swagger.js",
+    "seed": "node utils/seed.js",
+    "deploy": "wrangler deploy",
+    "dev:worker": "wrangler dev"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.0",
-    "axios": "^1.6.2",
-    "framer-motion": "^10.16.16",
-    "@reduxjs/toolkit": "^2.0.1",
-    "react-redux": "^9.0.4",
-    "react-icons": "^4.12.0",
-    "react-hot-toast": "^2.4.1",
-    "react-countup": "^6.5.0",
-    "react-intersection-observer": "^9.5.3"
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.41.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.6.3",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "pdfkit": "^0.20.2",
+    "razorpay": "^2.9.8",
+    "resend": "^3.2.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.0.8",
-    "tailwindcss": "^3.3.6",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.32"
+    "nodemon": "^3.1.14",
+    "wrangler": "^4.86.0"
   }
 }

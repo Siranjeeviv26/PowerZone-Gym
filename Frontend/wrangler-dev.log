@@ -1,0 +1,146 @@
+[wrapper] WRANGLER_BUILD_PLATFORM=node
+
+ ⛅️ wrangler 4.86.0 (update available 4.149.0)
+──────────────────────────────────────────────
+Using secrets defined in .dev.vars
+Your Worker has access to the following bindings:
+Binding                                       Resource                  Mode
+env.NODE_ENV ("(hidden)")                     Environment Variable      local
+env.PORT ("(hidden)")                         Environment Variable      local
+env.CLOUDINARY_API_KEY ("(hidden)")           Environment Variable      local
+env.CLOUDINARY_API_SECRET ("(hidden)")        Environment Variable      local
+env.CLOUDINARY_CLOUD_NAME ("(hidden)")        Environment Variable      local
+env.FRONTEND_URL ("(hidden)")                 Environment Variable      local
+env.JWT_EXPIRE ("(hidden)")                   Environment Variable      local
+env.JWT_SECRET ("(hidden)")                   Environment Variable      local
+env.MONGO_URI ("(hidden)")                    Environment Variable      local
+env.PAYMENT_PROVIDER ("(hidden)")             Environment Variable      local
+env.RAZORPAY_KEY_ID ("(hidden)")              Environment Variable      local
+env.RAZORPAY_KEY_SECRET ("(hidden)")          Environment Variable      local
+env.RAZORPAY_WEBHOOK_SECRET ("(hidden)")      Environment Variable      local
+env.RESEND_API_KEY ("(hidden)")               Environment Variable      local
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mImport "default" will always be undefined because there is no matching export in "node_modules/unenv/dist/runtime/npm/whatwg-url/index.mjs"[0m [import-is-undefined]
+
+    required-unenv-alias:whatwg-url:6:27:
+[37m      6 │         "default" in esm ? esm.[32mdefault[37m : {}
+        ╵                                [32m~~~~~~~[0m
+
+
+⎔ Starting local server...
+[wrangler:info] Ready on http://127.0.0.1:8787
+stdout: GET /api/health 200 7.000 ms
+[wrangler:info] GET /api/health 200 unknown (34ms)
+stdout: POST /api/auth/login 200 4912.000 ms
+[auth] login -> 200 in 2313ms (SLOW)
+[wrangler:info] POST /api/auth/login 200 unknown (4935ms)
+stdout: GET /api/health 200 1.000 ms
+[wrangler:info] GET /api/health 200 unknown (30ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] POST /api/auth/login 500 Internal Server Error (69ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/auth/me 500 Internal Server Error (24ms)
+stdout: GET /api/health 200 0.000 ms
+[wrangler:info] GET /api/health 200 unknown (8ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (54ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/testimonials 500 Internal Server Error (16ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/branches 500 Internal Server Error (16ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] POST /api/auth/login 500 Internal Server Error (16ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (15ms)
+stdout: GET /api/health 200 0.000 ms
+[wrangler:info] GET /api/health 200 unknown (8ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mImport "default" will always be undefined because there is no matching export in "node_modules/unenv/dist/runtime/npm/whatwg-url/index.mjs"[0m [import-is-undefined]
+
+    required-unenv-alias:whatwg-url:6:27:
+[37m      6 │         "default" in esm ? esm.[32mdefault[37m : {}
+        ╵                                [32m~~~~~~~[0m
+
+
+⎔ Reloading local server...
+⎔ Local server updated and ready
+stdout: GET /api/plans 200 5528.000 ms
+[wrangler:info] GET /api/plans 200 unknown (5556ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (27ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/testimonials 500 Internal Server Error (15ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] POST /api/auth/login 500 Internal Server Error (43ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (14ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (16ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mImport "default" will always be undefined because there is no matching export in "node_modules/unenv/dist/runtime/npm/whatwg-url/index.mjs"[0m [import-is-undefined]
+
+    required-unenv-alias:whatwg-url:6:27:
+[37m      6 │         "default" in esm ? esm.[32mdefault[37m : {}
+        ╵                                [32m~~~~~~~[0m
+
+
+⎔ Reloading local server...
+⎔ Local server updated and ready
+stdout: GET /api/plans 200 5095.000 ms
+[wrangler:info] GET /api/plans 200 unknown (5139ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (55ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (29ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] POST /api/auth/login 500 Internal Server Error (28ms)
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mUncaught Error: The Workers runtime canceled this request because it detected that your Worker's code had hung and would never generate a response. Refer to: https://developers.cloudflare.com/workers/observability/errors/ [0m
+
+
+[wrangler:info] GET /api/plans 500 Internal Server Error (19ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mImport "default" will always be undefined because there is no matching export in "node_modules/unenv/dist/runtime/npm/whatwg-url/index.mjs"[0m [import-is-undefined]
+
+    required-unenv-alias:whatwg-url:6:27:
+[37m      6 │         "default" in esm ? esm.[32mdefault[37m : {}
+        ╵                                [32m~~~~~~~[0m
+
+
+⎔ Reloading local server...
+⎔ Local server updated and ready
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mImport "default" will always be undefined because there is no matching export in "node_modules/unenv/dist/runtime/npm/whatwg-url/index.mjs"[0m [import-is-undefined]
+
+    required-unenv-alias:whatwg-url:6:27:
+[37m      6 │         "default" in esm ? esm.[32mdefault[37m : {}
+        ╵                                [32m~~~~~~~[0m
+
+
+⎔ Reloading local server...
+⎔ Local server updated and ready

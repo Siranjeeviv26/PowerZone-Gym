@@ -1,0 +1,18 @@
+✅ MongoDB connected
+🚀 Server running on port 5000
+[0mGET /api/health [32m200[0m 41.854 ms - 70[0m
+[0mGET /api/docs/ [32m200[0m 8.367 ms - 3159[0m
+[0mGET /api/plans [32m200[0m 85.548 ms - 1420[0m
+SyntaxError: Expected property name or '}' in JSON at position 1
+    at JSON.parse (<anonymous>)
+    at parse (D:\PowerZone-Gym\Backend\node_modules\body-parser\lib\types\json.js:92:19)
+    at D:\PowerZone-Gym\Backend\node_modules\body-parser\lib\read.js:128:18
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (D:\PowerZone-Gym\Backend\node_modules\raw-body\index.js:238:16)
+    at done (D:\PowerZone-Gym\Backend\node_modules\raw-body\index.js:227:7)
+    at IncomingMessage.onEnd (D:\PowerZone-Gym\Backend\node_modules\raw-body\index.js:287:7)
+    at IncomingMessage.emit (node:events:524:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+[0mPOST /api/auth/login [32m200[0m 285.145 ms - 520[0m
+[auth] login -> 200 in 286ms

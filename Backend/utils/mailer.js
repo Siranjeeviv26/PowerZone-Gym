@@ -1,7 +1,7 @@
 const { Resend } = require("resend");
-const PDFDocument = require("pdfkit");
 const path = require("path");
 const fs = require("fs");
+const PDFDocument = require("pdfkit");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -100,7 +100,10 @@ const capitalize = (s = "") => s.charAt(0).toUpperCase() + s.slice(1);
 const FONT_DIR = path.join(__dirname, "fonts");
 const REGULAR_TTF = path.join(FONT_DIR, "NotoSans-Regular.ttf");
 const BOLD_TTF = path.join(FONT_DIR, "NotoSans-Bold.ttf");
-const HAS_CUSTOM_FONT = fs.existsSync(REGULAR_TTF) && fs.existsSync(BOLD_TTF);
+let HAS_CUSTOM_FONT = false;
+try {
+  HAS_CUSTOM_FONT = !!(fs.existsSync(REGULAR_TTF) && fs.existsSync(BOLD_TTF));
+} catch (_) {}
 
 function generateInvoicePDF({ payment, plan, user }) {
   return new Promise((resolve, reject) => {
